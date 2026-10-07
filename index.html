@@ -99,7 +99,10 @@ button{font-family:inherit;cursor:pointer}
 .search .ic{position:absolute;inset-inline-start:13px;top:50%;transform:translateY(-50%);color:var(--muted);width:1.3em;height:1.3em}
 input:focus,select:focus,textarea:focus,button:focus-visible{outline:2.5px solid var(--gold);outline-offset:1px}
 .tl{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:stretch}
-.tl .cards{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:10px;min-width:0}
+.tl .cards{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:10px;min-width:0;touch-action:pan-y}
+@keyframes slN{from{transform:translateX(-46px);opacity:.25}to{transform:none;opacity:1}}
+@keyframes slP{from{transform:translateX(46px);opacity:.25}to{transform:none;opacity:1}}
+.tl .cards.sln{animation:slN .26s ease-out}.tl .cards.slp{animation:slP .26s ease-out}
 .arrow{align-self:center;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--primary);background:var(--surface);color:var(--primary-ink);display:grid;place-items:center;padding:0}
 .arrow:disabled{opacity:.35;cursor:default}
 .arrow.nx .ic{transform:scaleX(-1)}
@@ -346,7 +349,7 @@ let state=null,view='home',user=null,q='',cursor=0,openM=true,openT=false;
 let draft=null,draftErr='',openPicker=null,confirmDel=null,loginErr='',draftPicker=false;
 let tab='members',theme='light',scrollNow=true,toastT=null;
 let toolsOpen=false,toolsConfirm='',toolsMsg='',backupText='';
-let saveTimer=null,saveStatus='saved';
+let saveTimer=null,saveStatus='saved',slideDir='';
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -458,8 +461,9 @@ function renderHome(){
   const t=todayIdx();
   $('#tlsec').innerHTML=`<div class="sec-h"><h2>${ic('cal')}الجدول الزمني</h2><span class="sp"></span>${cursor!==clampIdx(t)?`<button class="btn sm" data-act="today">العودة لهذا الشهر</button>`:''}</div>
    <div class="tl"><button class="arrow pv" data-act="prev" aria-label="الشهر السابق" ${cursor<=0?'disabled':''}>${ic('chev')}</button>
-   <div class="cards">${tcard(sched,cursor-1,'السابق')}${tcard(sched,cursor,'cur')}${tcard(sched,cursor+1,'القادم')}</div>
+   <div class="cards${slideDir==='n'?' sln':slideDir==='p'?' slp':''}">${tcard(sched,cursor-1,'السابق')}${tcard(sched,cursor,'cur')}${tcard(sched,cursor+1,'القادم')}</div>
    <button class="arrow nx" data-act="next" aria-label="الشهر التالي" ${cursor>=N-1?'disabled':''}>${ic('chev')}</button></div>`;
+  slideDir='';
   // الجدول الشهري
   const rows=sched.months.filter(m=>!q||m.payments.some(p=>hitName(p.name)));
   const showM=openM||q;
@@ -636,8 +640,8 @@ function click(e){
     case'go-admin':view='admin';render();break;
     case'logout':user=null;creds=null;view='home';render();break;
     case'login':doLogin();break;
-    case'prev':cursor--;renderHome();break;
-    case'next':cursor++;renderHome();break;
+    case'prev':cursor--;slideDir='p';renderHome();break;
+    case'next':cursor++;slideDir='n';renderHome();break;
     case'today':cursor=clampIdx(todayIdx());renderHome();break;
     case'tg-m':openM=!openM;if(openM)scrollNow=true;renderHome();break;
     case'tg-t':openT=!openT;renderHome();break;
@@ -722,6 +726,17 @@ app.addEventListener('click',click);
 app.addEventListener('input',input);
 app.addEventListener('change',input);
 app.addEventListener('keydown',keydown);
+/* تمرير باللمس على بطاقات الشريط الزمني: سحب لليمين = الشهر القادم، لليسار = الشهر السابق (مع بقاء الأسهم) */
+let tx=null,ty=null;
+app.addEventListener('touchstart',e=>{const c=e.target.closest&&e.target.closest('.tl .cards');if(c&&e.touches.length===1){tx=e.touches[0].clientX;ty=e.touches[0].clientY}else tx=null},{passive:true});
+app.addEventListener('touchend',e=>{
+  if(tx===null||view!=='home')return;
+  const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;tx=null;
+  if(Math.abs(dx)<45||Math.abs(dx)<Math.abs(dy)*1.5)return;
+  const N=monthsCount(state.settings),n=dx>0?cursor+1:cursor-1;
+  if(n<0||n>=N)return;
+  cursor=n;slideDir=dx>0?'n':'p';renderHome();
+},{passive:true});
 
 (async function boot(){
   let th='light';try{th=localStorage.getItem('jamiya-theme')||'light'}catch(e){}
@@ -736,4 +751,3 @@ app.addEventListener('keydown',keydown);
 })();
 </script>
 </body></html>
-<!-- test -->

@@ -116,9 +116,9 @@ input:focus,select:focus,textarea:focus,button:focus-visible{outline:2.5px solid
 .tcard.empty{opacity:.5;text-align:center}
 .tcard h3{margin:6px 0 6px;font-size:15px;font-weight:800;line-height:1.25}
 .tcard h3 small{display:block;font-weight:600;color:var(--muted);font-size:12px}
-.pay{display:flex;justify-content:space-between;align-items:baseline;gap:6px 8px;flex-wrap:wrap;padding:4px 0;border-top:1px dashed var(--line);font-size:13px}
+.pay{display:flex;justify-content:space-between;align-items:baseline;gap:6px 8px;flex-wrap:nowrap;padding:4px 0;border-top:1px dashed var(--line);font-size:13px}
 .pay:first-of-type{border-top:0}
-.pay .pn{min-width:0;font-weight:600}
+.pay .pn{min-width:0;font-weight:600;flex:1;line-height:1.3}.pay .omr{flex:none}
 .pay.hit{background:var(--hit);border-radius:6px;padding-inline:5px}
 .none{color:var(--muted);font-size:12.5px}
 .tl .navrow{display:none}
@@ -192,7 +192,7 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
   .tl{grid-template-columns:1fr 1fr;grid-template-areas:"c c" "p n"}
   .tl .tvp{grid-area:c}
   .tl .arrow.pv{grid-area:p;justify-self:start}.tl .arrow.nx{grid-area:n;justify-self:end}
-  .slot{padding:8px 7px}.tc{padding:38px 7px 8px}.tc h3{font-size:13.5px}.pay{font-size:12px;flex-direction:column;gap:0}
+  .slot{padding:8px 7px}.tc{padding:38px 7px 8px}.tc h3{font-size:13.5px}.pay{font-size:11.5px;gap:4px;flex-wrap:nowrap;align-items:center}.pay .omr{font-size:11.5px}
   .mrow{grid-template-columns:62px 1fr;padding:4px 8px;gap:6px}
   .ml{flex-direction:column;align-items:flex-start;gap:0;line-height:1.25}.ml b{font-size:12.5px}.ml small{font-size:11px}
   .chip{font-size:11.5px;padding:0 6px;gap:5px}.chips{gap:4px}

@@ -99,10 +99,15 @@ button{font-family:inherit;cursor:pointer}
 .search .ic{position:absolute;inset-inline-start:13px;top:50%;transform:translateY(-50%);color:var(--muted);width:1.3em;height:1.3em}
 input:focus,select:focus,textarea:focus,button:focus-visible{outline:2.5px solid var(--gold);outline-offset:1px}
 .tl{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:stretch}
-.tl .cards{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:10px;min-width:0;touch-action:pan-y}
-@keyframes slN{from{transform:translateX(-46px);opacity:.25}to{transform:none;opacity:1}}
-@keyframes slP{from{transform:translateX(46px);opacity:.25}to{transform:none;opacity:1}}
-.tl .cards.sln{animation:slN .26s ease-out}.tl .cards.slp{animation:slP .26s ease-out}
+.tl .tvp{position:relative;overflow:hidden;border-radius:14px;min-width:0;container-type:inline-size;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab}
+.tframe{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;pointer-events:none}
+.slot{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 11px}
+.slot.cur{border:2px solid var(--gold);box-shadow:var(--shadow)}
+.ttrack{position:relative;display:flex;gap:8px;width:calc((100cqw - 16px)/3*5 + 32px);transform:translateX(calc((100cqw - 16px)/3 + 8px));will-change:transform}
+.tc{flex:0 0 calc((100cqw - 16px)/3);min-width:0;padding:42px 11px 10px}
+.tc.empty{opacity:.5;text-align:center}
+.tc h3{margin:0 0 6px;font-size:15px;font-weight:800;line-height:1.25}
+.tc h3 small{display:block;font-weight:600;color:var(--muted);font-size:12px}
 .arrow{align-self:center;width:40px;height:40px;border-radius:50%;border:1.5px solid var(--primary);background:var(--surface);color:var(--primary-ink);display:grid;place-items:center;padding:0}
 .arrow:disabled{opacity:.35;cursor:default}
 .arrow.nx .ic{transform:scaleX(-1)}
@@ -185,9 +190,9 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
 .urow:first-child{border-top:0}.urow b{flex:1}
 @media (max-width:620px){
   .tl{grid-template-columns:1fr 1fr;grid-template-areas:"c c" "p n"}
-  .tl .cards{grid-area:c;grid-template-columns:1fr 1.25fr 1fr;gap:6px}
+  .tl .tvp{grid-area:c}
   .tl .arrow.pv{grid-area:p;justify-self:start}.tl .arrow.nx{grid-area:n;justify-self:end}
-  .tcard{padding:8px 7px}.tcard h3{font-size:13.5px}.pay{font-size:12px;flex-direction:column;gap:0}
+  .slot{padding:8px 7px}.tc{padding:38px 7px 8px}.tc h3{font-size:13.5px}.pay{font-size:12px;flex-direction:column;gap:0}
   .mrow{grid-template-columns:62px 1fr;padding:4px 8px;gap:6px}
   .ml{flex-direction:column;align-items:flex-start;gap:0;line-height:1.25}.ml b{font-size:12.5px}.ml small{font-size:11px}
   .chip{font-size:11.5px;padding:0 6px;gap:5px}.chips{gap:4px}
@@ -349,7 +354,7 @@ let state=null,view='home',user=null,q='',cursor=0,openM=true,openT=false;
 let draft=null,draftErr='',openPicker=null,confirmDel=null,loginErr='',draftPicker=false;
 let tab='members',theme='light',scrollNow=true,toastT=null;
 let toolsOpen=false,toolsConfirm='',toolsMsg='',backupText='';
-let saveTimer=null,saveStatus='saved',slideDir='';
+let saveTimer=null,saveStatus='saved';
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -429,14 +434,12 @@ function ucurve(N,cur){
   <circle class="pulse" cx="${c.cx.toFixed(1)}" cy="${c.y}" r="9" pointer-events="none"/>
   <circle cx="${c.cx.toFixed(1)}" cy="${c.y}" r="8" fill="var(--gold)" stroke="var(--surface)" stroke-width="3" pointer-events="none"/></svg>`;
 }
-function tcard(sched,i,role){
-  const N=sched.N;
-  if(i<0||i>=N)return`<div class="tcard empty"><span class="pill">${role}</span><h3>—</h3></div>`;
+function cellHTML(sched,i){
+  if(i<0||i>=sched.N)return`<div class="tc empty"><h3>—</h3></div>`;
   const mo=sched.months[i];
   const pays=mo.payments.filter(p=>hitName(p.name));
-  const isToday=i===todayIdx();
   const body=pays.length?pays.map(p=>`<div class="pay${q?' hit':''}"><span class="pn">${esc(p.name)}</span>${money(p.amount)}</div>`).join(''):`<div class="none">${q?'لا يستلم هذا الشهر':'—'}</div>`;
-  return`<div class="tcard${role==='cur'?' cur':''}"><span class="pill${isToday?' gold':''}">${role==='cur'?(isToday?'الشهر الحالي':'الشهر المحدد'):role}</span><h3>${MONTHS[mo.m]}<small>${mo.y} · الشهر ${i+1}</small></h3>${body}</div>`;
+  return`<div class="tc"><h3>${MONTHS[mo.m]}<small>${mo.y} · الشهر ${i+1}</small></h3>${body}</div>`;
 }
 function renderHome(){
   const s=state.settings,sched=computeSchedule(state),N=sched.N;
@@ -461,9 +464,8 @@ function renderHome(){
   const t=todayIdx();
   $('#tlsec').innerHTML=`<div class="sec-h"><h2>${ic('cal')}الجدول الزمني</h2><span class="sp"></span>${cursor!==clampIdx(t)?`<button class="btn sm" data-act="today">العودة لهذا الشهر</button>`:''}</div>
    <div class="tl"><button class="arrow pv" data-act="prev" aria-label="الشهر السابق" ${cursor<=0?'disabled':''}>${ic('chev')}</button>
-   <div class="cards${slideDir==='n'?' sln':slideDir==='p'?' slp':''}">${tcard(sched,cursor-1,'السابق')}${tcard(sched,cursor,'cur')}${tcard(sched,cursor+1,'القادم')}</div>
+   <div class="tvp" id="tvp"><div class="tframe"><div class="slot"><span class="pill">السابق</span></div><div class="slot cur"><span class="pill${cursor===t?' gold':''}">${cursor===t?'الشهر الحالي':'الشهر المحدد'}</span></div><div class="slot"><span class="pill">القادم</span></div></div><div class="ttrack" id="ttrack">${[-2,-1,0,1,2].map(d=>cellHTML(sched,cursor+d)).join('')}</div></div>
    <button class="arrow nx" data-act="next" aria-label="الشهر التالي" ${cursor>=N-1?'disabled':''}>${ic('chev')}</button></div>`;
-  slideDir='';
   // الجدول الشهري
   const rows=sched.months.filter(m=>!q||m.payments.some(p=>hitName(p.name)));
   const showM=openM||q;
@@ -640,8 +642,8 @@ function click(e){
     case'go-admin':view='admin';render();break;
     case'logout':user=null;creds=null;view='home';render();break;
     case'login':doLogin();break;
-    case'prev':cursor--;slideDir='p';renderHome();break;
-    case'next':cursor++;slideDir='n';renderHome();break;
+    case'prev':go(-1);break;
+    case'next':go(1);break;
     case'today':cursor=clampIdx(todayIdx());renderHome();break;
     case'tg-m':openM=!openM;if(openM)scrollNow=true;renderHome();break;
     case'tg-t':openT=!openT;renderHome();break;
@@ -726,17 +728,48 @@ app.addEventListener('click',click);
 app.addEventListener('input',input);
 app.addEventListener('change',input);
 app.addEventListener('keydown',keydown);
-/* تمرير باللمس على بطاقات الشريط الزمني: سحب لليمين = الشهر القادم، لليسار = الشهر السابق (مع بقاء الأسهم) */
-let tx=null,ty=null;
-app.addEventListener('touchstart',e=>{const c=e.target.closest&&e.target.closest('.tl .cards');if(c&&e.touches.length===1){tx=e.touches[0].clientX;ty=e.touches[0].clientY}else tx=null},{passive:true});
-app.addEventListener('touchend',e=>{
-  if(tx===null||view!=='home')return;
-  const t=e.changedTouches[0],dx=t.clientX-tx,dy=t.clientY-ty;tx=null;
-  if(Math.abs(dx)<45||Math.abs(dx)<Math.abs(dy)*1.5)return;
-  const N=monthsCount(state.settings),n=dx>0?cursor+1:cursor-1;
-  if(n<0||n>=N)return;
-  cursor=n;slideDir=dx>0?'n':'p';renderHome();
-},{passive:true});
+/* شريط زمني: العناوين (السابق/الحالي/القادم) ثابتة والبطاقات تتحرك مع الإصبع بسلاسة، والأسهم تعمل بنفس الحركة */
+let drag=null,busy=false;
+const trackStep=()=>{const t=$('#ttrack');return t&&t.children[0]?t.children[0].offsetWidth+8:0};
+function setTx(x,anim){const t=$('#ttrack');if(!t)return;t.style.transition=anim?'transform .24s cubic-bezier(.22,.8,.3,1)':'none';t.style.transform=`translateX(${x}px)`}
+function go(dir){
+  const n=cursor+dir;
+  if(busy||n<0||n>=monthsCount(state.settings))return;
+  const st=trackStep();
+  if(!st){cursor=n;renderHome();return}
+  busy=true;setTx(st+dir*st,true);
+  setTimeout(()=>{cursor=n;busy=false;renderHome()},240);
+}
+app.addEventListener('pointerdown',e=>{
+  const v=e.target.closest&&e.target.closest('.tvp');
+  if(!v||busy||(e.pointerType==='mouse'&&e.button!==0)){drag=null;return}
+  drag={id:e.pointerId,x:e.clientX,y:e.clientY,t:Date.now(),on:false,dx:0,st:trackStep(),v};
+});
+app.addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.id)return;
+  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(!drag.on){
+    if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)){drag.on=true;try{drag.v.setPointerCapture(e.pointerId)}catch(x){}}
+    else return;
+  }
+  let d=Math.max(-drag.st,Math.min(drag.st,dx));
+  const ok=d>0?cursor<monthsCount(state.settings)-1:cursor>0;
+  if(!ok)d*=0.25;
+  drag.dx=d;setTx(drag.st+d,false);
+});
+const endDrag=e=>{
+  if(!drag||e.pointerId!==drag.id)return;
+  const d=drag;drag=null;
+  if(!d.on)return;
+  const vel=d.dx/Math.max(1,Date.now()-d.t),dir=d.dx>0?1:-1;
+  const ok=dir>0?cursor<monthsCount(state.settings)-1:cursor>0;
+  if(e.type==='pointerup'&&ok&&(Math.abs(d.dx)>d.st*0.3||Math.abs(vel)>0.45)){
+    busy=true;setTx(d.st+dir*d.st,true);
+    setTimeout(()=>{cursor+=dir;busy=false;renderHome()},230);
+  }else setTx(d.st,true);
+};
+app.addEventListener('pointerup',endDrag);
+app.addEventListener('pointercancel',endDrag);
 
 (async function boot(){
   let th='light';try{th=localStorage.getItem('jamiya-theme')||'light'}catch(e){}

@@ -252,7 +252,7 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
 @keyframes pl{50%{opacity:.25}}
 .card+.card{margin-top:12px}
 .card h3{margin:0 0 10px;font-size:15.5px;font-weight:800;color:var(--primary-ink);display:flex;align-items:center;gap:7px}
-.mem{padding:10px 0;border-top:1px solid var(--line)}
+.mem{padding:10px;border:1px solid var(--line);border-radius:14px;margin-top:8px}.mem.z1{background:var(--gold-soft);border-color:var(--gold)}.mem.z2{background:var(--bg)}
 .mem:first-of-type{border-top:0}
 .mem-top{display:flex;align-items:center;gap:8px}
 .idx{width:26px;height:26px;border-radius:50%;background:var(--primary-soft);color:var(--primary-ink);font-weight:800;font-size:12px;display:grid;place-items:center;flex:none}
@@ -881,7 +881,7 @@ async function setPhone(id,v){
 }
 function memberRow(m,i){
   const N=monthsCount(state.settings),open=openPicker===m.id,del=confirmDel===m.id,om=openMem.has(m.id)||open;
-  return`<div class="mem"><div class="mem-top"><span class="idx">${i+1}</span>
+  return`<div class="mem ${i%2===0?'z1':'z2'}"><div class="mem-top"><span class="idx">${i+1}</span>
    <input class="in name" data-f="name" data-id="${m.id}" value="${esc(m.name)}" aria-label="اسم العضو">
    <div class="acts"><button class="ib mtg" data-act="tg-mem" data-id="${m.id}" aria-expanded="${om}" aria-label="${om?'طي بيانات العضو':'عرض بيانات العضو'}">${ic('down')}</button><button class="btn sm ${del?'dangerfill':'danger'}" data-act="del" data-id="${m.id}" aria-label="حذف">${ic('trash')}${del?'تأكيد الحذف':''}</button></div></div>
    ${REMOTE?phoneRow(m.id):''}

@@ -56,9 +56,13 @@ button{font-family:inherit;cursor:pointer}
 .pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700;background:var(--primary-soft);color:var(--primary-ink);white-space:nowrap}
 .pill.gold{background:var(--gold-soft);color:var(--gold-ink)}
 .pill.rust{background:var(--rust-soft);color:var(--rust)}
-.stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.stats{display:flex;flex-wrap:nowrap;gap:6px;margin-top:12px}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:5px 12px;display:flex;align-items:center;gap:8px;font-size:13px}
 .stat span{color:var(--muted)}.stat b{font-weight:800}
+.stat{flex:1 1 0;min-width:0;white-space:nowrap}
+@media(max-width:560px){.stat{flex-direction:column;align-items:flex-start;gap:1px;padding:5px 9px;font-size:12px}.stat span{font-size:11px}}
+.bellbtn{height:auto;min-height:32px;justify-content:space-between;padding:3px 10px}.bellbtn .bt{display:flex;align-items:center;gap:6px}.bellbtn .bk{display:flex;flex-direction:column;align-items:center;line-height:1.1;max-width:70px}.bellbtn .bk svg{width:15px;height:15px}.bellbtn .bk small{font-size:9.5px;font-weight:600;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mtg{width:34px;height:34px}.mtg svg{transition:transform .2s}.mtg[aria-expanded="true"] svg{transform:rotate(180deg)}
 .demo{margin-top:10px;padding:7px 12px;border-radius:10px;background:var(--gold-soft);color:var(--gold-ink);font-size:13px;font-weight:600}
 .sec{margin-top:16px}
 .sec-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px}
@@ -252,7 +256,7 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
 <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
-<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/></symbol>
 <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></symbol>
 <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
@@ -397,7 +401,7 @@ let toolsOpen=false,toolsConfirm='',toolsMsg='',backupText='';
 let saveTimer=null,saveStatus='saved';
 let paid={},pushSubs={},payIdx=null,payAllConf=false,remBusy=false,pushOpen=false,pushMsg='',pushMine=null;
 try{pushMine=JSON.parse(localStorage.getItem('jamiya-push')||'null')}catch(e){}
-let perms=[],openML=true,editU=null,chipConf='';
+let perms=[],openMem=new Set(),openML=true,editU=null,chipConf='';
 const ALLP=['pay','members','users'];
 const PERM_T={pay:'تأكيد الدفع والتذكير',members:'إدارة الأعضاء والإعدادات والبيانات',users:'إدارة المستخدمين'};
 const PERM_S={pay:'التحصيل',members:'الأعضاء',users:'المستخدمون'};
@@ -434,7 +438,7 @@ function headerHTML(){
   if(view==='home'){
     row=user?`<button class="theme pri" data-act="go-admin" aria-label="لوحة التحكم" title="لوحة التحكم">${ic('gear')}</button><button class="theme dg" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}</button>`
       :`<button class="theme pri" data-act="go-login" aria-label="دخول الإدارة" title="دخول الإدارة">${ic('lock')}</button>`;
-    if(REMOTE)bell=`<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع">${ic('bell')}<span>التنبيهات</span></button>`;
+    if(REMOTE)bell=`<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk">${ic('check')}<small>${esc((find(pushMine.m)||{}).name||'')}</small></span>`:''}</button>`;
   }else if(view==='admin')row=`<button class="theme" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}</button><button class="theme dg" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}</button>`;
   else row=`<button class="theme" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}</button>`;
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
@@ -614,17 +618,17 @@ function picker(sel,owner){
 const prefSel=(v,attr)=>`<select ${attr}>${PREFS.map(p=>`<option value="${p.k}" ${p.k===v?'selected':''}>${p.t}</option>`).join('')}</select>`;
 const tagsHTML=(arr,o)=>{const a=inRange(arr);return a.length?`<div class="tags" data-tags="${o}">${a.map(k=>`<span class="pill gold">${mLabel(k)}</span>`).join('')}</div>`:`<div class="tags" data-tags="${o}"></div>`};
 function memberRow(m,i){
-  const N=monthsCount(state.settings),open=openPicker===m.id,del=confirmDel===m.id;
+  const N=monthsCount(state.settings),open=openPicker===m.id,del=confirmDel===m.id,om=openMem.has(m.id)||open;
   return`<div class="mem"><div class="mem-top"><span class="idx">${i+1}</span>
    <input class="in name" data-f="name" data-id="${m.id}" value="${esc(m.name)}" aria-label="اسم العضو">
-   <div class="acts"><button class="ib" data-act="up" data-id="${m.id}" aria-label="أعلى" ${i===0?'disabled':''}>${ic('up')}</button>
+   <div class="acts"><button class="ib mtg" data-act="tg-mem" data-id="${m.id}" aria-expanded="${om}" aria-label="${om?'طي بيانات العضو':'عرض بيانات العضو'}">${ic('down')}</button><button class="ib" data-act="up" data-id="${m.id}" aria-label="أعلى" ${i===0?'disabled':''}>${ic('up')}</button>
    <button class="ib" data-act="dn" data-id="${m.id}" aria-label="أسفل" ${i===state.members.length-1?'disabled':''}>${ic('down')}</button>
    <button class="btn sm ${del?'dangerfill':'danger'}" data-act="del" data-id="${m.id}" aria-label="حذف">${ic('trash')}${del?'تأكيد الحذف':''}</button></div></div>
-   <div class="mem-bot"><label class="fld amt"><span>المبلغ الشهري</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-f="monthly" data-id="${m.id}" value="${toInt(m.monthly)}"></label>
+   ${om?`<div class="mem-bot"><label class="fld amt"><span>المبلغ الشهري</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-f="monthly" data-id="${m.id}" value="${toInt(m.monthly)}"></label>
    <div class="tot"><span>إجمالي المستحق</span><b data-tot="${m.id}">${money(toInt(m.monthly)*N)}</b></div>
    <label class="fld pf"><span>موعد الاستلام</span>${prefSel(m.pref,`data-f="pref" data-id="${m.id}"`)}</label>
    <button class="btn sm" data-act="tp" data-id="${m.id}">${ic('cal')}أشهر مفضلة (<span data-cnt="${m.id}">${inRange(m.months).length}</span>)</button></div>
-   ${open?picker(m.months,m.id):''}${tagsHTML(m.months,m.id)}</div>`;
+   ${open?picker(m.months,m.id):''}${tagsHTML(m.months,m.id)}`:''}</div>`;
 }
 function renderMembers(){
   const N=monthsCount(state.settings),d=draft;
@@ -884,6 +888,7 @@ function click(e){
     case'uedit':{const x=listUsers().find(y=>y.u===b.dataset.u);if(x){editU={orig:x.u,name:x.u,perms:(x.perms||[]).slice()};renderUsers()}break}
     case'usave':userAction('save');break;
     case'ucancel':editU=null;renderUsers();break;
+    case'tg-mem':openMem.has(id)?openMem.delete(id):openMem.add(id);renderMembers();break;
     case'tg-ml':openML=!openML;renderMembers();break;
     case'chippay':{
       const i=clampIdx(cursor),k=monthKey(state.settings,i);

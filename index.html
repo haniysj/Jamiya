@@ -61,7 +61,7 @@ button{font-family:inherit;cursor:pointer}
 .stat span{color:var(--muted)}.stat b{font-weight:800}
 .stat{flex:1 1 0;min-width:0;white-space:nowrap}
 @media(max-width:560px){.stat{flex-direction:column;align-items:flex-start;gap:1px;padding:5px 9px;font-size:12px}.stat span{font-size:11px}}
-.bellbtn{height:auto;min-height:32px;justify-content:space-between;padding:3px 10px}.bellbtn .bt{display:flex;align-items:center;gap:6px}.bellbtn .bk{display:flex;flex-direction:column;align-items:center;line-height:1.1;max-width:70px}.bellbtn .bk svg{width:15px;height:15px}.bellbtn .bk small{font-size:9.5px;font-weight:600;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bellbtn{height:auto;min-height:32px;justify-content:space-between;padding:3px 10px}.bellbtn .bt{display:flex;align-items:center;gap:6px}.bellbtn .bk{display:flex;flex-direction:column;align-items:center;line-height:1.1;max-width:70px}.bellbtn .bk svg{width:15px;height:15px;color:#2E9E5B;stroke-width:3}.bellbtn .bk small{font-size:9.5px;font-weight:600;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:400px){.stats .stat:not(.inl){padding:5px 6px}.stats .stat:not(.inl) span{font-size:10px}}
 .stat.inl{flex:none;flex-direction:row;align-items:center;gap:6px;padding:2px 10px;font-size:13px}.stat.inl span{font-size:13px}
 .ord{display:flex;align-items:center;gap:6px;margin-inline-start:auto;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
@@ -441,7 +441,7 @@ function headerHTML(){
   if(view==='home'){
     row=user?`<button class="theme pri" data-act="go-admin" aria-label="لوحة التحكم" title="لوحة التحكم">${ic('gear')}</button><button class="theme dg" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}</button>`
       :`<button class="theme pri" data-act="go-login" aria-label="دخول الإدارة" title="دخول الإدارة">${ic('lock')}</button>`;
-    if(REMOTE)bell=`<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk">${ic('check')}<small>${esc((find(pushMine.m)||{}).name||'')}</small></span>`:''}</button>`;
+    if(REMOTE)bell=`<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk">${ic('check')}<small>${esc(((find(pushMine.m)||{}).name||'').trim().split(/\s+/)[0])}</small></span>`:''}</button>`;
   }else if(view==='admin')row=`<button class="theme" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}</button><button class="theme dg" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}</button>`;
   else row=`<button class="theme" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}</button>`;
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>

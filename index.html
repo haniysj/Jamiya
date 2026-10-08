@@ -554,7 +554,7 @@ let phones={},onb=false,perms=[],openMem=new Set(),openML=true,editU=null,chipCo
 const ALLP=['pay','members','users','notify'];
 const PERM_T={pay:'تأكيد الدفع والتذكير',members:'إدارة الأعضاء والإعدادات والبيانات',users:'إدارة المستخدمين',notify:'إرسال وجدولة التنبيهات'};
 const PERM_S={pay:'التحصيل',members:'الأعضاء',users:'المستخدمون',notify:'التنبيهات'};
-const can=x=>!!user&&perms.includes(x);
+const can=x=>!!user&&perms.includes(x);const tabOk=t=>t[4]===''?!!user&&!perms.includes('users'):can(t[4]);
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -658,7 +658,7 @@ async function onbPush(){
   if(ok)onbClose();
 }
 function render(){
-  if(view==='admin'){const t=TABS.find(x=>x[0]===tab);if(!t||!can(t[4]))tab=firstTab()}
+  if(view==='admin'){const t=TABS.find(x=>x[0]===tab);if(!t||!tabOk(t))tab=firstTab()}
   let body='';
   if(view==='home')body=`<div id="pushpanel"></div><div id="stats"></div><div id="ucard"></div>
     <section class="sec"><div class="search"><input id="q" type="text" placeholder="ابحث باسم العضو…" value="${esc(q)}" aria-label="بحث بالاسم" autocomplete="off">${ic('search')}<button class="qx" id="qx" data-act="clearq" aria-label="مسح البحث" ${q?'':'hidden'}>${ic('x')}</button></div></section>
@@ -667,7 +667,7 @@ function render(){
   else body=adminHTML();
   $('#app').innerHTML=`<div class="wrap">${headerHTML()}${body}${view==='home'&&canInstall()?`<div class="instrow">${instBtn('sm')}</div>`:''}<div class="foot">إعداد: هاني الغطريفي</div></div>${view==='home'&&onb?onbHTML():''}`;
   if(view==='home')renderHome();
-  if(view==='admin'){renderSettings();renderSummary();renderMembers();renderPay();renderUsers();renderTools();renderNotif();setStatus(saveStatus)}
+  if(view==='admin'){renderSettings();renderSummary();renderMembers();renderPay();renderUsers();renderMe();renderTools();renderNotif();setStatus(saveStatus)}
 }
 
 /* ---------- الصفحة الرئيسية ---------- */
@@ -831,14 +831,14 @@ async function doLogin(){
 }
 
 /* ---------- لوحة التحكم ---------- */
-const TABS=[['members','الأعضاء','users','memBox','members'],['pay','التحصيل','check','payBox','pay'],['settings','الإعدادات','gear','setBox','members'],['users','المستخدمون','lock','usrBox','users'],['data','البيانات','db','toolBox','members'],['notif','التنبيهات','bell','notBox','notify']];
-const firstTab=()=>{const t=TABS.find(x=>can(x[4]));return t?t[0]:''};
+const TABS=[['members','الأعضاء','users','memBox','members'],['pay','التحصيل','check','payBox','pay'],['settings','الإعدادات','gear','setBox','members'],['users','المستخدمون','lock','usrBox','users'],['data','البيانات','db','toolBox','members'],['notif','التنبيهات','bell','notBox','notify'],['me','حسابي','lock','meBox','']];
+const firstTab=()=>{const t=TABS.find(x=>tabOk(x));return t?t[0]:''};
 function adminHTML(){
-  const vis=TABS.filter(x=>can(x[4])&&(REMOTE||x[0]!=='notif'));
+  const vis=TABS.filter(x=>tabOk(x)&&(REMOTE||(x[0]!=='notif'&&x[0]!=='me')));
   if(!vis.length)return`<div class="abar"><h2>لوحة التحكم</h2></div><div class="card empty-box">لا توجد صلاحيات لهذا الحساب. تواصل مع مسؤول الجمعية.</div>`;
   return`<div class="abar"><h2>لوحة التحكم</h2><span class="save saved" id="saveSt"></span></div><div id="sumBox"></div>
   <div class="tabs" role="tablist">${vis.map(x=>`<button class="tab" role="tab" data-act="tab" data-t="${x[0]}" aria-selected="${tab===x[0]}">${ic(x[2])}${x[1]}</button>`).join('')}</div>
-  ${TABS.map(x=>`<div id="${x[3]}" class="card" ${tab===x[0]&&can(x[4])?'':'hidden'}></div>`).join('')}`;
+  ${TABS.map(x=>`<div id="${x[3]}" class="card" ${tab===x[0]&&tabOk(x)?'':'hidden'}></div>`).join('')}`;
 }
 function renderSettings(){
   const s=state.settings;
@@ -936,6 +936,22 @@ function renderUsers(){
   <div class="lbl" style="margin:8px 0 2px">الصلاحيات</div><div id="addperm">${permChecks(['pay'])}</div>
   <div style="margin-top:6px"><button class="btn sm" data-act="uadd">${ic('plus')}إضافة مستخدم</button></div></div>
   <div class="err" id="uerr"></div>`;
+}
+function renderMe(){
+  const e=$('#meBox');if(!e||!REMOTE)return;
+  e.innerHTML=`<h3>${ic('lock')}حسابي</h3><p class="hint" style="margin-top:0">يمكنك تعديل بيانات حسابك فقط.</p><div class="grid2"><div class="fld"><span>اسم المستخدم</span><input class="in" id="me-n" value="${esc(user||'')}" autocapitalize="off"></div><div class="fld"><span>كلمة مرور جديدة (اتركها فارغة لعدم التغيير)</span><input class="in" id="me-p" type="text" autocapitalize="off" autocomplete="off"></div></div><div class="err" id="me-err"></div><button class="btn pri sm" data-act="mesave">${ic('check')}حفظ</button>`;
+}
+async function saveMe(){
+  const say=m=>{const e=$('#me-err');if(e)e.textContent=m};
+  const nn=($('#me-n').value||'').trim(),np=$('#me-p').value||'';
+  if(!nn)return say('اسم المستخدم مطلوب.');
+  if(np&&np.length<6)return say('كلمة المرور يجب ألا تقل عن 6 أحرف.');
+  try{
+    await rpc('jamiya_update_self',{p_u:creds.u,p_p:creds.p,p_newname:nn===user?null:nn,p_newpass:np||null});
+    creds={u:nn,p:np||creds.p};user=nn;
+    try{localStorage.setItem('jamiya-auth',JSON.stringify(creds))}catch(e){}
+    toast('تم حفظ التعديلات');render();
+  }catch(x){say(/exists/.test(x.message)?'اسم المستخدم موجود مسبقًا.':'تعذّر تنفيذ العملية.')}
 }
 async function userAction(kind,arg){
   const say=m=>{const e=$('#uerr2')||$('#uerr');if(e)e.textContent=m};
@@ -1260,6 +1276,7 @@ function click(e){
       renderMembers();break;
     case'uadd':userAction('add');break;
     case'udel':userAction('del',b.dataset.u);break;
+    case'mesave':saveMe();break;
     case'uedit':{const x=listUsers().find(y=>y.u===b.dataset.u);if(x){editU={orig:x.u,name:x.u,perms:(x.perms||[]).slice()};renderUsers()}break}
     case'usave':userAction('save');break;
     case'ucancel':editU=null;renderUsers();break;

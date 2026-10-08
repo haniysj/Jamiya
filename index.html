@@ -718,7 +718,7 @@ const prefSel=(v,attr)=>`<select ${attr}>${PREFS.map(p=>`<option value="${p.k}" 
 const tagsHTML=(arr,o)=>{const a=inRange(arr);return a.length?`<div class="tags" data-tags="${o}">${a.map(k=>`<span class="pill gold">${mLabel(k)}</span>`).join('')}</div>`:`<div class="tags" data-tags="${o}"></div>`};
 const fmtPh=p=>{p=String(p||'');return p.startsWith('968')&&p.length===11?'+968 '+p.slice(3,7)+' '+p.slice(7):'+'+p};
 function phoneRow(id){const p=phones[id];
-  return`<div class="mph">${ic('phone')}${p?`<span>${fmtPh(p)}</span><a class="wa" href="https://wa.me/${p}" target="_blank" rel="noopener" aria-label="فتح محادثة واتساب">${ic('wa')}واتساب</a>`:'<span style="direction:rtl;font-weight:500">لا يوجد رقم</span>'}</div>`}
+  return`<div class="mph">${ic('phone')}${p?`<span>${fmtPh(p)}</span><a class="wa" href="https://wa.me/${p}" data-wa="${p}" target="_blank" rel="noopener noreferrer" aria-label="فتح محادثة واتساب">${ic('wa')}واتساب</a>`:'<span style="direction:rtl;font-weight:500">لا يوجد رقم</span>'}</div>`}
 async function setPhone(id,v){
   try{await rpc('jamiya_admin_set_phone',{p_u:creds.u,p_p:creds.p,p_member:id,p_phone:v});
     let n=v.replace(/\D/g,'');if(n.startsWith('00'))n=n.slice(2);if(n.length===8)n='968'+n;
@@ -997,7 +997,17 @@ function addMember(){
   renderMembers();
   if(!draftErr){const i=$('[data-d="name"]');if(i)i.focus()}
 }
+function openWA(n){
+  const web='https://wa.me/'+n;
+  if(!(isIOS||/android/i.test(navigator.userAgent))){window.open(web,'_blank','noopener');return}
+  let left=false;
+  const t=setTimeout(()=>{if(!left&&document.visibilityState==='visible')location.href=web},1500);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){left=true;clearTimeout(t)}},{once:true});
+  location.href='whatsapp://send?phone='+n;
+}
 function click(e){
+  const wa=e.target.closest&&e.target.closest('a.wa[data-wa]');
+  if(wa){e.preventDefault();openWA(wa.dataset.wa);return}
   const b=e.target.closest('[data-act]');
   const act=b?b.dataset.act:'';
   if(confirmDel&&act!=='del'){confirmDel=null;if(view==='admin')renderMembers()}

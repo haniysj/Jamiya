@@ -63,6 +63,30 @@ Deno.serve(async (req) => {
     const idx = (y - Number(s.startYear)) * 12 + (mo - Number(s.startMonth));
     if (idx < 0 || idx >= N) return json({ skipped: "outside-range", key });
 
+    if (body.kind === "turn") {
+      const po = (data.payouts || {})[key];
+      if (!Array.isArray(po) || !po.length) return json({ skipped: "no-payout-data", key });
+      const subsT = (dump.subs || []).filter((x: any) => po.some((p: any) => p.id === x.member_id));
+      const nameOf = new Map(data.members.map((m: any) => [m.id, m.name]));
+      if (body.dry) return json({ dry: true, receivers: po.map((p: any) => ({ name: nameOf.get(p.id), amount: p.amount })), subscribers: subsT.length });
+      webpush.setVapidDetails(conf.vapid_subject, conf.vapid_public, conf.vapid_private);
+      const deadT: string[] = [];
+      let okT = 0, badT = 0;
+      await Promise.all(subsT.map(async (sub: any) => {
+        const p = po.find((q: any) => q.id === sub.member_id);
+        const text = `${nameOf.get(sub.member_id)}، دورك لاستلام الجمعية في ${MONTHS[mo - 1]} ${y}، بإذن الله بنهاية هذا الشهر. المبلغ: ${Math.round(Number(p.amount)).toLocaleString("en-US")} ر.ع.`;
+        try {
+          await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify({ title: s.name || "الجمعية", body: text, tag: "turn-" + key, url: "/" }), { TTL: 86400 });
+          okT++;
+        } catch (e: any) {
+          badT++;
+          if (e && (e.statusCode === 404 || e.statusCode === 410)) deadT.push(sub.endpoint);
+        }
+      }));
+      if (deadT.length) await rpc("jamiya_push_prune", { p_endpoints: deadT }, SVC);
+      return json({ kind: "turn", key, sent: okT, failed: badT, pruned: deadT.length });
+    }
+
     if (body.kind === "milestone" || body.kind === "tip") {
       const mem = data.members.filter((m: any) => Math.round(Number(m.monthly)) > 0);
       const pot = mem.reduce((a: number, m: any) => a + Math.round(Number(m.monthly)), 0);

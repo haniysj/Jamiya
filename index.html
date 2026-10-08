@@ -63,6 +63,20 @@ button{font-family:inherit;cursor:pointer}
 @media(max-width:560px){.stat{flex-direction:column;align-items:flex-start;gap:1px;padding:5px 9px;font-size:12px}.stat span{font-size:11px}}
 .bellbtn{height:auto;min-height:32px;justify-content:space-between;padding:3px 10px}.bellbtn .bt{display:flex;align-items:center;gap:6px}.bellbtn .bk{display:flex;flex-direction:column;align-items:center;line-height:1.1;max-width:70px}.bellbtn .bk svg{width:15px;height:15px;color:#2E9E5B;stroke-width:3}.bellbtn .bk small{font-size:9.5px;font-weight:600;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:400px){.stats .stat:not(.inl){padding:5px 6px}.stats .stat:not(.inl) span{font-size:10px}}
+
+.brand p{margin-top:5px!important}
+.mph{display:flex;align-items:center;gap:8px;margin:6px 0 0;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.mph svg{width:14px;height:14px}.mph span{font-weight:600;direction:ltr;unicode-bidi:embed}
+.wa{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;background:#E3F6EA;color:#1B7F43;border:1px solid #9AD8B3;font-weight:700;font-size:12px;text-decoration:none}
+.wa svg{width:15px;height:15px;color:#1FA855}
+:root[data-theme="dark"] .wa{background:#143323;color:#7EE0A3;border-color:#2C6B47}
+.onb{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 60px;overflow:auto}
+.onbc{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px 18px;display:flex;flex-direction:column;gap:12px}
+.onbc .mark{margin:0 auto;width:54px;height:54px}.onbc .mark svg{width:34px;height:18px}
+.onbc h2{margin:0;text-align:center;font-size:19px;font-weight:800;color:var(--primary-ink)}
+.onbc p{margin:0;text-align:center;color:var(--muted);font-size:13px}
+.phn{display:flex;gap:8px;align-items:center}.phn b{padding:0 10px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface2);font-size:14px}.phn .in{flex:1;min-width:0}
+.onbskip{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:none;border:0;color:var(--muted);font:inherit;font-size:12px;text-decoration:underline;padding:8px 16px;cursor:pointer}
 .stat.inl{flex:none;flex-direction:row;align-items:center;gap:6px;padding:2px 10px;font-size:13px}.stat.inl span{font-size:13px}
 .ord{display:flex;align-items:center;gap:6px;margin-inline-start:auto;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
 .mtg{width:34px;height:34px}.mtg svg{transition:transform .2s}.mtg[aria-expanded="true"] svg{transform:rotate(180deg)}
@@ -253,7 +267,7 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
 <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></symbol>
 <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
-<symbol id="i-aup" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol><symbol id="i-adn" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-aup" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol><symbol id="i-adn" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol><symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.3 2.7 6 6 6l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
 <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -295,7 +309,7 @@ const Storage=REMOTE?{
   async load(){try{loadFailed=false;return await rpc('jamiya_get')}catch(e){loadFailed=true;return null}},
   async save(d){
     if(!creds||loadFailed)return false;
-    try{await rpc('jamiya_save',{p_u:creds.u,p_p:creds.p,p_data:{settings:d.settings,members:d.members,demo:!!d.demo}});return true}catch(e){return false}
+    try{await rpc('jamiya_save',{p_u:creds.u,p_p:creds.p,p_data:{settings:d.settings,members:d.members,demo:!!d.demo,payouts:payoutsOf(d)}});return true}catch(e){return false}
   }
 }:{
   async load(){try{const r=localStorage.getItem(STORE_KEY);return r?JSON.parse(r):null}catch(e){return null}},
@@ -339,6 +353,7 @@ function simulate(order,N){
   return{P,months,starts};
 }
 const PREF_KEYS=['start','mid','nearMid'];
+function payoutsOf(d){const sc=computeSchedule(d),o={};sc.months.forEach(m=>{o[monthKey(d.settings,m.i)]=m.payments.map(p=>({id:p.id,amount:p.amount}))});return o}
 function computeSchedule(data){
   const s=data.settings,N=monthsCount(s);
   const ms=data.members.map(m=>({id:m.id,name:m.name,pref:PREF_KEYS.includes(m.pref)?m.pref:'mid',monthly:toInt(m.monthly),months:Array.isArray(m.months)?m.months:[]}));
@@ -404,7 +419,7 @@ let toolsOpen=false,toolsConfirm='',toolsMsg='',backupText='';
 let saveTimer=null,saveStatus='saved';
 let paid={},pushSubs={},payIdx=null,payAllConf=false,remBusy=false,pushOpen=false,pushMsg='',pushMine=null;
 try{pushMine=JSON.parse(localStorage.getItem('jamiya-push')||'null')}catch(e){}
-let perms=[],openMem=new Set(),openML=true,editU=null,chipConf='';
+let phones={},onb=false,perms=[],openMem=new Set(),openML=true,editU=null,chipConf='';
 const ALLP=['pay','members','users'];
 const PERM_T={pay:'تأكيد الدفع والتذكير',members:'إدارة الأعضاء والإعدادات والبيانات',users:'إدارة المستخدمين'};
 const PERM_S={pay:'التحصيل',members:'الأعضاء',users:'المستخدمون'};
@@ -447,6 +462,29 @@ function headerHTML(){
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
   <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p></div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
 }
+function onbHTML(){
+  return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">
+  <div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
+  <h2>أهلًا بك في ${esc(state.settings.name)}</h2>
+  <p>خطوة واحدة لتصلك تنبيهات الدفع وموعد دورك.</p>
+  <label class="fld"><span>اسمك</span><select class="in" id="onbm"><option value="">اختر اسمك…</option>${state.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select></label>
+  <label class="fld"><span>رقم هاتفك</span><div class="phn"><b dir="ltr">+968</b><input class="in" id="onbp" type="tel" inputmode="tel" dir="ltr" placeholder="9XXXXXXX" autocomplete="tel"></div></label>
+  <div class="err" id="onbe"></div>
+  <button class="btn pri" data-act="onb-go" style="width:100%;justify-content:center">${ic('bell')}حفظ وتفعيل التنبيهات</button>
+  </div><button class="onbskip" data-act="onb-skip">تخطي</button></div>`;
+}
+function onbClose(){onb=false;try{localStorage.setItem('jamiya-onb','1')}catch(e){}const o=$('.onb');if(o)o.remove()}
+async function onbGo(){
+  const id=($('#onbm')||{}).value,ph=(($('#onbp')||{}).value||'').trim(),say=m=>{const e=$('#onbe');if(e)e.textContent=m};
+  if(!id)return say('اختر اسمك من القائمة.');
+  if(ph.replace(/\D/g,'').length<8)return say('أدخل رقم هاتف صحيح.');
+  say('جارٍ الحفظ…');
+  try{await rpc('jamiya_member_phone',{p_member:id,p_phone:ph})}
+  catch(e){return say(/invalid_phone/.test(e.message)?'رقم الهاتف غير صحيح.':'تعذّر حفظ الرقم، حاول مرة أخرى.')}
+  if(!pushOK){onbClose();toast('تم حفظ رقمك. لتفعيل التنبيهات على الآيفون أضف الموقع للشاشة الرئيسية ثم افتحه منها');return}
+  const ok=await pushEnable(id,say);
+  if(ok)onbClose();
+}
 function render(){
   if(view==='admin'){const t=TABS.find(x=>x[0]===tab);if(!t||!can(t[4]))tab=firstTab()}
   let body='';
@@ -455,7 +493,7 @@ function render(){
     <section class="sec who" id="whosec"></section><section class="sec" id="tlsec"></section><section class="sec card" id="paysec"></section><section class="sec" id="monsec"></section><section class="sec" id="totsec"></section>`;
   else if(view==='login')body=loginHTML();
   else body=adminHTML();
-  $('#app').innerHTML=`<div class="wrap">${headerHTML()}${body}<div class="foot">إعداد: هاني الغطريفي</div></div>`;
+  $('#app').innerHTML=`<div class="wrap">${headerHTML()}${body}<div class="foot">إعداد: هاني الغطريفي</div></div>${view==='home'&&onb?onbHTML():''}`;
   if(view==='home')renderHome();
   if(view==='admin'){renderSettings();renderSummary();renderMembers();renderPay();renderUsers();renderTools();setStatus(saveStatus)}
 }
@@ -549,6 +587,7 @@ function loginHTML(){
 }
 async function afterAuth(){
   if(can('users')){try{remoteUsers=await rpc('jamiya_users2',{p_u:creds.u,p_p:creds.p})||[]}catch(e){remoteUsers=[]}}
+  if(can('members')||can('pay')){try{phones=await rpc('jamiya_phones',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
   if(can('pay')){try{pushSubs=await rpc('jamiya_push_subs',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
 }
 async function restoreSession(){
@@ -620,12 +659,22 @@ function picker(sel,owner){
 }
 const prefSel=(v,attr)=>`<select ${attr}>${PREFS.map(p=>`<option value="${p.k}" ${p.k===v?'selected':''}>${p.t}</option>`).join('')}</select>`;
 const tagsHTML=(arr,o)=>{const a=inRange(arr);return a.length?`<div class="tags" data-tags="${o}">${a.map(k=>`<span class="pill gold">${mLabel(k)}</span>`).join('')}</div>`:`<div class="tags" data-tags="${o}"></div>`};
+const fmtPh=p=>{p=String(p||'');return p.startsWith('968')&&p.length===11?'+968 '+p.slice(3,7)+' '+p.slice(7):'+'+p};
+function phoneRow(id){const p=phones[id];
+  return`<div class="mph">${ic('phone')}${p?`<span>${fmtPh(p)}</span><a class="wa" href="https://wa.me/${p}" target="_blank" rel="noopener" aria-label="فتح محادثة واتساب">${ic('wa')}واتساب</a>`:'<span style="direction:rtl;font-weight:500">لا يوجد رقم</span>'}</div>`}
+async function setPhone(id,v){
+  try{await rpc('jamiya_admin_set_phone',{p_u:creds.u,p_p:creds.p,p_member:id,p_phone:v});
+    let n=v.replace(/\D/g,'');if(n.startsWith('00'))n=n.slice(2);if(n.length===8)n='968'+n;
+    if(n)phones[id]=n;else delete phones[id];toast(n?'تم حفظ الرقم':'تم حذف الرقم');renderMembers()}
+  catch(e){toast(/invalid_phone/.test(e.message)?'رقم الهاتف غير صحيح':'تعذّر حفظ الرقم')}
+}
 function memberRow(m,i){
   const N=monthsCount(state.settings),open=openPicker===m.id,del=confirmDel===m.id,om=openMem.has(m.id)||open;
   return`<div class="mem"><div class="mem-top"><span class="idx">${i+1}</span>
    <input class="in name" data-f="name" data-id="${m.id}" value="${esc(m.name)}" aria-label="اسم العضو">
    <div class="acts"><button class="ib mtg" data-act="tg-mem" data-id="${m.id}" aria-expanded="${om}" aria-label="${om?'طي بيانات العضو':'عرض بيانات العضو'}">${ic('down')}</button><button class="btn sm ${del?'dangerfill':'danger'}" data-act="del" data-id="${m.id}" aria-label="حذف">${ic('trash')}${del?'تأكيد الحذف':''}</button></div></div>
-   ${om?`<div class="mem-bot"><label class="fld amt"><span>المبلغ الشهري</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-f="monthly" data-id="${m.id}" value="${toInt(m.monthly)}"></label>
+   ${REMOTE?phoneRow(m.id):''}
+   ${om?`<div class="mem-bot">${REMOTE&&can('members')?`<label class="fld pf"><span>رقم الهاتف</span><input class="in" dir="ltr" inputmode="tel" data-ph="${m.id}" value="${esc(String(phones[m.id]||'').replace(/^968(?=\d{8}$)/,''))}" placeholder="9XXXXXXX"></label>`:''}<label class="fld amt"><span>المبلغ الشهري</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-f="monthly" data-id="${m.id}" value="${toInt(m.monthly)}"></label>
    <div class="tot"><span>إجمالي المستحق</span><b data-tot="${m.id}">${money(toInt(m.monthly)*N)}</b></div>
    <label class="fld pf"><span>موعد الاستلام</span>${prefSel(m.pref,`data-f="pref" data-id="${m.id}"`)}</label>
    <button class="btn sm" data-act="tp" data-id="${m.id}">${ic('cal')}أشهر مفضلة (<span data-cnt="${m.id}">${inRange(m.months).length}</span>)</button><div class="ord"><span>تغيير الأسبقية:</span><button class="ib" data-act="up" data-id="${m.id}" aria-label="رفع الأسبقية" ${i===0?'disabled':''}>${ic('aup')}</button><button class="ib" data-act="dn" data-id="${m.id}" aria-label="خفض الأسبقية" ${i===state.members.length-1?'disabled':''}>${ic('adn')}</button></div></div>
@@ -803,9 +852,9 @@ async function remind(memberId){
   remBusy=false;renderPay();
 }
 const b64u=t=>{const p='='.repeat((4-t.length%4)%4),r=atob((t+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(r,c=>c.charCodeAt(0))};
-async function pushEnable(){
-  const sel=$('#pushm'),id=sel?sel.value:'';
-  const say=m=>{pushMsg=m;const e=document.querySelector('.ppanel .err');if(e)e.textContent=m};
+async function pushEnable(idArg,sayArg){
+  const sel=$('#pushm'),id=idArg||(sel?sel.value:'');
+  const say=sayArg||(m=>{pushMsg=m;const e=document.querySelector('.ppanel .err');if(e)e.textContent=m});
   if(!id)return say('اختر اسمك أولًا.');
   try{
     say('جارٍ التفعيل…');
@@ -818,7 +867,7 @@ async function pushEnable(){
     const j=sub.toJSON();
     await rpc('jamiya_push_subscribe',{p_member:id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth});
     pushMine={m:id};try{localStorage.setItem('jamiya-push',JSON.stringify(pushMine))}catch(e){}
-    pushOpen=false;pushMsg='';pushUI();toast('تم تفعيل التنبيهات');
+    pushOpen=false;pushMsg='';pushUI();toast('تم تفعيل التنبيهات');return true;
   }catch(e){say('تعذّر التفعيل. تأكد من الاتصال وحاول مرة أخرى.')}
 }
 async function pushDisable(){
@@ -890,6 +939,8 @@ function click(e){
     case'usave':userAction('save');break;
     case'ucancel':editU=null;renderUsers();break;
     case'tg-mem':openMem.has(id)?openMem.delete(id):openMem.add(id);renderMembers();break;
+    case'onb-go':onbGo();break;
+    case'onb-skip':onbClose();break;
     case'tg-ml':openML=!openML;renderMembers();break;
     case'chippay':{
       const i=clampIdx(cursor),k=monthKey(state.settings,i);
@@ -924,6 +975,7 @@ function click(e){
 }
 function input(e){
   const t=e.target;
+  if(t.dataset.ph){if(e.type==='change')setPhone(t.dataset.ph,t.value.trim());return}
   if(t.id==='q'){q=t.value;renderHome();return}
   if(t.dataset.s){
     const k=t.dataset.s,s=state.settings,v=t.value;
@@ -953,6 +1005,7 @@ function keydown(e){
   const t=e.target;
   if(t.id==='lu'||t.id==='lp'){e.preventDefault();doLogin()}
   else if(t.dataset.d==='name'||t.dataset.d==='monthly'){e.preventDefault();addMember()}
+  else if(t.id==='onbp'){e.preventDefault();onbGo()}
   else if(t.id==='nu'||t.id==='np'){e.preventDefault();click({target:document.querySelector('[data-act="uadd"]')})}
 }
 const app=$('#app');
@@ -1009,6 +1062,7 @@ app.addEventListener('pointercancel',endDrag);
   state=normalize(await Storage.load())||defaultData();
   if(REMOTE)await Promise.all([loadPaid(),restoreSession()]);else paid=state.pay||{};
   draft=newDraft();cursor=clampIdx(todayIdx());
+  try{onb=REMOTE&&!user&&!loadFailed&&!pushMine&&!localStorage.getItem('jamiya-onb')&&state.members.length>0}catch(e){}
   render();
   if(REMOTE)document.addEventListener('visibilitychange',async()=>{
     if(document.visibilityState!=='visible'||view==='login')return;

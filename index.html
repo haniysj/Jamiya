@@ -696,7 +696,7 @@ function ucurve(N,cur){
   ${cur!==tc?`<circle cx="${k.cx.toFixed(1)}" cy="${k.y}" r="11" fill="none" stroke="var(--primary-ink)" stroke-width="3" pointer-events="none"/>`:''}
   <circle class="pulse" cx="${c.cx.toFixed(1)}" cy="${c.y}" r="9" pointer-events="none"/>
   <circle cx="${c.cx.toFixed(1)}" cy="${c.y}" r="8" fill="var(--gold)" stroke="var(--surface)" stroke-width="3" pointer-events="none"/>
-  <path d="M${(c.cx-adx*2.4).toFixed(1)} ${c.y-3.6} L${(c.cx+adx*2.4).toFixed(1)} ${c.y} L${(c.cx-adx*2.4).toFixed(1)} ${c.y+3.6}" fill="none" stroke="#3B2417" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/></svg>`;
+  <path d="M${(c.cx+adx*11).toFixed(1)} ${c.y-8} L${(c.cx+adx*22).toFixed(1)} ${c.y} L${(c.cx+adx*11).toFixed(1)} ${c.y+8} Z" fill="var(--gold)" stroke="var(--surface)" stroke-width="2.5" stroke-linejoin="round" pointer-events="none"/></svg>`;
 }
 const noteMark=(i,id)=>{
   if(!REMOTE)return'';

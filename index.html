@@ -49,6 +49,8 @@ button{font-family:inherit;cursor:pointer}
 .brand p{margin:0;color:var(--muted);font-size:12.5px}
 .nav{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .navrow{display:flex;gap:8px}
+.theme .tl{display:none}
+@media (pointer:fine) and (min-width:760px){.theme.wl{width:auto;padding:0 12px;display:inline-flex;align-items:center;gap:7px}.theme.wl .tl{display:inline;font-size:13px;font-weight:700;white-space:nowrap}}
 .theme.dg{border-color:var(--rust);color:var(--rust)}
 .bellbtn{width:100%;height:32px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700;font-size:12px;padding:0 8px;white-space:nowrap}
 .bellbtn.on{background:var(--gold-soft);color:var(--gold-ink);border-color:var(--gold)}
@@ -59,6 +61,7 @@ button{font-family:inherit;cursor:pointer}
 .npop .xb{position:absolute;top:10px;inset-inline-end:10px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}.npop .onbc{position:relative;padding-top:44px}
 .npop{position:fixed;inset:0;z-index:95;background:rgba(30,20,14,.5);display:flex;align-items:center;justify-content:center;padding:16px}.npop .onbc{max-width:380px;gap:10px}.npop h3{margin:0;font-size:15px}.npop .nt{white-space:pre-wrap;line-height:1.8;background:var(--gold-soft);color:var(--gold-ink);border-radius:12px;padding:10px 12px;font-size:14px}.npop textarea{min-height:96px}
 .dlv{display:flex;flex-direction:column;gap:6px;align-items:stretch}.dlvb{justify-content:center;white-space:normal;text-align:center;line-height:1.5}.btn.okb{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.tc{position:relative}.tc.dl::after{content:'';position:absolute;inset:0;border:2.5px solid var(--ok);border-radius:14px;pointer-events:none}.dlb{position:absolute;top:6px;left:8px;width:20px;height:20px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center}.dlb svg{width:12px;height:12px}
 .pill.gold{background:var(--gold-soft);color:var(--gold-ink)}
 .pill.rust{background:var(--rust-soft);color:var(--rust)}
 .stats{display:flex;flex-wrap:nowrap;gap:6px;margin-top:12px}
@@ -252,7 +255,7 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
 @keyframes pl{50%{opacity:.25}}
 .card+.card{margin-top:12px}
 .card h3{margin:0 0 10px;font-size:15.5px;font-weight:800;color:var(--primary-ink);display:flex;align-items:center;gap:7px}
-.mem{padding:10px;border:1px solid var(--line);border-radius:14px;margin-top:8px}.mem.z1{background:var(--gold-soft);border-color:var(--gold)}.mem.z2{background:var(--bg)}
+.mem{padding:10px;border:1px solid var(--line);border-radius:14px;margin-top:8px}.mem.z1{background:rgba(255,226,92,.26);border-color:#C89B3C}.mem.z2{background:rgba(240,140,185,.17);border-color:#8E5BC4}
 .mem:first-of-type{border-top:0}
 .mem-top{display:flex;align-items:center;gap:8px}
 .idx{width:26px;height:26px;border-radius:50%;background:var(--primary-soft);color:var(--primary-ink);font-weight:800;font-size:12px;display:grid;place-items:center;flex:none}
@@ -592,11 +595,11 @@ function headerHTML(){
   const th=`<button class="theme" data-act="theme" aria-label="${theme==='dark'?'الوضع النهاري':'الوضع الليلي'}" title="${theme==='dark'?'الوضع النهاري':'الوضع الليلي'}">${ic(theme==='dark'?'sun':'moon')}</button>`;
   let row='',bell='';
   if(view==='home'){
-    row=user?`<button class="theme pri" data-act="go-admin" aria-label="لوحة التحكم" title="لوحة التحكم">${ic('gear')}</button><button class="theme dg" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}</button>`
-      :`<button class="theme pri" data-act="go-login" aria-label="دخول الإدارة" title="دخول الإدارة">${ic('lock')}</button>`;
+    row=user?`<button class="theme pri wl" data-act="go-admin" aria-label="لوحة التحكم" title="لوحة التحكم">${ic('gear')}<span class="tl">لوحة التحكم</span></button><button class="theme dg wl" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}<span class="tl">تسجيل الخروج</span></button>`
+      :`<button class="theme pri wl" data-act="go-login" aria-label="دخول الإدارة" title="دخول الإدارة">${ic('lock')}<span class="tl">دخول الإدارة</span></button>`;
     if(REMOTE)bell=`<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk">${ic('check')}<small>${esc(((find(pushMine.m)||{}).name||'').trim().split(/\s+/)[0])}</small></span>`:''}</button>`;
-  }else if(view==='admin')row=`<button class="theme" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}</button><button class="theme dg" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}</button>`;
-  else row=`<button class="theme" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}</button>`;
+  }else if(view==='admin')row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button><button class="theme dg wl" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}<span class="tl">تسجيل الخروج</span></button>`;
+  else row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button>`;
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
   <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p></div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
 }
@@ -716,6 +719,7 @@ function noteHTML(){
   </div></div>`;
 }
 function showNote(){let b=$('#notebox');if(!b){b=document.createElement('div');b.id='notebox';b.addEventListener('click',click);document.body.appendChild(b)}b.innerHTML=noteHTML();if(noteSel&&creds&&can('members')&&noteEdit){const t=$('#ntxt');if(t&&!t.value)try{t.focus()}catch(x){}}}
+async function loadDeliv(){if(!REMOTE)return;try{const d=await rpc('jamiya_deliveries_public');if(d&&typeof d==='object')deliv=d}catch(e){}}
 async function loadMyNotes(){
   if(!REMOTE||creds||!pushMine||!pushOK)return;
   try{const reg=await navigator.serviceWorker.getRegistration();const sub=reg&&await reg.pushManager.getSubscription();if(!sub)return;
@@ -734,7 +738,8 @@ function cellHTML(sched,i){
   const mo=sched.months[i];
   const pays=mo.payments.filter(p=>hitName(p.name));
   const body=pays.length?pays.map(p=>`<div class="pay${q?' hit':''}"><span class="pn">${esc(p.name)}${noteMark(i,p.id)}</span>${money(p.amount)}</div>`).join(''):`<div class="none">${q?'لا يستلم هذا الشهر':'—'}</div>`;
-  return`<div class="tc"><h3>${MONTHS[mo.m]}<small>${mo.y} · الشهر ${i+1}</small></h3>${body}</div>`;
+  const kk=monthKey(state.settings,i),dl=mo.payments.length>0&&mo.payments.every(p=>deliv[kk+'|'+p.id]);
+  return`<div class="tc${dl?' dl':''}">${dl?`<span class="dlb" title="تم تسليم مبلغ هذا الدور">${ic('check')}</span>`:''}<h3>${MONTHS[mo.m]}<small>${mo.y} · الشهر ${i+1}</small></h3>${body}</div>`;
 }
 function renderHome(){
   const s=state.settings,sched=computeSchedule(state),N=sched.N;
@@ -790,7 +795,6 @@ function loginHTML(){
 }
 async function afterAuth(){
   try{notes=await rpc('jamiya_notes_get',{p_u:creds.u,p_p:creds.p})||{}}catch(e){notes={}}
-  try{deliv=await rpc('jamiya_deliveries_get',{p_u:creds.u,p_p:creds.p})||{}}catch(e){deliv={}}
   if(can('users')){try{remoteUsers=await rpc('jamiya_users2',{p_u:creds.u,p_p:creds.p})||[]}catch(e){remoteUsers=[]}}
   if(can('members')||can('pay')){try{phones=await rpc('jamiya_phones',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
   if(can('notify')){await loadNotif()}
@@ -1206,7 +1210,7 @@ function click(e){
     case'go-login':loginErr='';view='login';render();break;
     case'go-home':view='home';render();break;
     case'go-admin':view='admin';render();break;
-    case'logout':user=null;creds=null;notes={};noteEdit=false;deliv={};delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
+    case'logout':user=null;creds=null;notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
     case'login':doLogin();break;
     case'prev':go(-1);break;
     case'next':go(1);break;
@@ -1401,15 +1405,15 @@ app.addEventListener('pointercancel',endDrag);
   let th='light';try{th=localStorage.getItem('jamiya-theme')||'light'}catch(e){}
   applyTheme(th==='dark'?'dark':'light');
   state=normalize(await Storage.load())||defaultData();
-  if(REMOTE)await Promise.all([loadPaid(),restoreSession()]);else paid=state.pay||{};
+  if(REMOTE)await Promise.all([loadPaid(),loadDeliv(),restoreSession()]);else paid=state.pay||{};
   draft=newDraft();cursor=clampIdx(todayIdx());
   try{onb=REMOTE&&!user&&!loadFailed&&!pushMine&&!localStorage.getItem('jamiya-onb')&&state.members.length>0}catch(e){}
   render();
   loadMyNotes();
   if(REMOTE)document.addEventListener('visibilitychange',async()=>{
     if(document.visibilityState!=='visible'||view==='login')return;
-    if(user){await loadPaid();refreshPay();return}
-    await loadPaid();const d=normalize(await Storage.load());if(d){state=d;if(view==='home')renderHome()}else if(view==='home')renderHome()
+    if(user){await loadPaid();await loadDeliv();refreshPay();return}
+    await loadPaid();await loadDeliv();const d=normalize(await Storage.load());if(d){state=d;if(view==='home')renderHome()}else if(view==='home')renderHome()
   });
 })();
 </script>

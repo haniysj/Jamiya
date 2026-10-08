@@ -469,51 +469,6 @@ function normPhone(v){
   return'';
 }
 const phLocal=p=>String(p||'').replace(/^968(?=\d{8}$)/,'');
-async function applyContact(id,name,tels){
-  tels=tels.map(normPhone).filter(Boolean);
-  if(!tels.length){toast('جهة الاتصال لا تحتوي على رقم صالح');return}
-  if(id==='draft'){draft.phone=tels[0];if(!draft.name.trim()&&name)draft.name=name;renderMembers()}
-  else await setPhone(id,tels[0]);
-  if(tels.length>1)toast('تم اختيار أول رقم من جهة الاتصال');
-}
-function parseVcf(t){
-  const cards=String(t).split(/BEGIN:VCARD/i).slice(1),out=[];
-  for(const c of cards){
-    const fn=(c.match(/^FN[^:\r\n]*:(.*)$/im)||[])[1]||'',tels=[];
-    c.replace(/^(?:item\d+\.)?TEL[^:\r\n]*:(.*)$/gim,(m,v)=>{tels.push(v.trim())});
-    if(tels.length)out.push({name:fn.trim(),tels});
-  }
-  return out;
-}
-function pickVcf(id){
-  let f=document.getElementById('vcfIn');
-  if(!f){f=document.createElement('input');f.type='file';f.id='vcfIn';f.accept='.vcf,text/vcard,text/x-vcard,text/directory';f.hidden=true;document.body.appendChild(f)}
-  f.value='';
-  f.onchange=async()=>{
-    const file=f.files&&f.files[0];if(!file)return;
-    try{
-      const list=parseVcf(await file.text());
-      if(!list.length){toast('الملف لا يحتوي على رقم هاتف');return}
-      await applyContact(id,list[0].name,list[0].tels);
-      if(list.length>1)toast('الملف يحتوي أكثر من جهة، تم اختيار الأولى');
-    }catch(e){toast('تعذّرت قراءة الملف')}
-  };
-  f.click();
-}
-async function pickContact(id){
-  const api=navigator.contacts&&typeof navigator.contacts.select==='function';
-  if(api){
-    try{
-      const r=await navigator.contacts.select(['name','tel'],{multiple:false});
-      if(!r||!r.length)return;
-      const c=r[0];await applyContact(id,c.name&&c.name[0],c.tel||[]);return;
-    }catch(e){
-      if(e&&e.name==='AbortError')return;
-    }
-  }
-  toast('متصفحك لا يدعم الوصول المباشر لجهات الاتصال. اختر ملف جهة اتصال (vCard) أو اكتب الرقم.');
-  setTimeout(()=>pickVcf(id),900);
-}
 const todayIdx=()=>{const n=new Date(),s=state.settings;return(n.getFullYear()-s.startYear)*12+(n.getMonth()+1-s.startMonth)};
 const clampIdx=i=>Math.max(0,Math.min(monthsCount(state.settings)-1,i));
 
@@ -788,7 +743,7 @@ function memberRow(m,i){
    <input class="in name" data-f="name" data-id="${m.id}" value="${esc(m.name)}" aria-label="اسم العضو">
    <div class="acts"><button class="ib mtg" data-act="tg-mem" data-id="${m.id}" aria-expanded="${om}" aria-label="${om?'طي بيانات العضو':'عرض بيانات العضو'}">${ic('down')}</button><button class="btn sm ${del?'dangerfill':'danger'}" data-act="del" data-id="${m.id}" aria-label="حذف">${ic('trash')}${del?'تأكيد الحذف':''}</button></div></div>
    ${REMOTE?phoneRow(m.id):''}
-   ${om?`<div class="mem-bot">${REMOTE&&can('members')?`<div class="fld pf"><span>رقم الهاتف</span><div class="phrow"><input class="in" dir="ltr" inputmode="tel" data-ph="${m.id}" value="${esc(phLocal(phones[m.id]))}" placeholder="9XXXXXXX"><button type="button" class="ib" data-act="pickc" data-id="${m.id}" aria-label="اختيار من جهات الاتصال" title="اختيار من جهات الاتصال">${ic('contact')}</button></div></div>`:''}<label class="fld amt"><span>المبلغ الشهري</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-f="monthly" data-id="${m.id}" value="${toInt(m.monthly)}"></label>
+   ${om?`<div class="mem-bot">${REMOTE&&can('members')?`<div class="fld pf"><span>رقم الهاتف</span><div class="phrow"><input class="in" dir="ltr" inputmode="tel" data-ph="${m.id}" value="${esc(phLocal(phones[m.id]))}" placeholder="9XXXXXXX"></div></div>`:''}<label class="fld amt"><span>المبلغ الشهري</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-f="monthly" data-id="${m.id}" value="${toInt(m.monthly)}"></label>
    <div class="tot"><span>إجمالي المستحق</span><b data-tot="${m.id}">${money(toInt(m.monthly)*N)}</b></div>
    <label class="fld pf"><span>موعد الاستلام</span>${prefSel(m.pref,`data-f="pref" data-id="${m.id}"`)}</label>
    <button class="btn sm" data-act="tp" data-id="${m.id}">${ic('cal')}أشهر مفضلة (<span data-cnt="${m.id}">${inRange(m.months).length}</span>)</button><div class="ord"><span>تغيير الأسبقية:</span><button class="ib" data-act="up" data-id="${m.id}" aria-label="رفع الأسبقية" ${i===0?'disabled':''}>${ic('aup')}</button><button class="ib" data-act="dn" data-id="${m.id}" aria-label="خفض الأسبقية" ${i===state.members.length-1?'disabled':''}>${ic('adn')}</button></div></div>
@@ -798,7 +753,7 @@ function renderMembers(){
   const N=monthsCount(state.settings),d=draft;
   $('#memBox').innerHTML=`<h3>${ic('users')}الأعضاء</h3>
   <div class="addbox"><div class="fld"><span>اسم العضو الجديد</span><input class="in" data-d="name" value="${esc(d.name)}" placeholder="مثال: سالم الحارثي"></div>
-   ${REMOTE&&can('members')?`<div class="fld"><span>رقم الهاتف (اختياري)</span><div class="phrow"><input class="in" dir="ltr" inputmode="tel" data-d="phone" value="${esc(phLocal(d.phone))}" placeholder="9XXXXXXX"><button type="button" class="ib" data-act="pickc" data-id="draft" aria-label="اختيار من جهات الاتصال" title="اختيار من جهات الاتصال">${ic('contact')}</button></div></div>`:''}
+   ${REMOTE&&can('members')?`<div class="fld"><span>رقم الهاتف (اختياري)</span><div class="phrow"><input class="in" dir="ltr" inputmode="tel" data-d="phone" value="${esc(phLocal(d.phone))}" placeholder="9XXXXXXX"></div></div>`:''}
    <div class="mem-bot"><label class="fld amt"><span>المبلغ الشهري (إجباري)</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-d="monthly" value="${d.monthly}"></label>
    <div class="tot"><span>إجمالي المستحق</span><b id="dTot">${money(toInt(d.monthly)*N)}</b></div>
    <label class="fld pf"><span>موعد الاستلام</span>${prefSel(d.pref,'data-d="pref"')}</label>
@@ -1115,7 +1070,6 @@ function click(e){
     case'usave':userAction('save');break;
     case'ucancel':editU=null;renderUsers();break;
     case'tg-mem':openMem.has(id)?openMem.delete(id):openMem.add(id);renderMembers();break;
-    case'pickc':pickContact(id);break;
     case'install':installApp();break;
     case'ntsend':ntSend();break;
     case'onb-go':onbGo();break;

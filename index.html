@@ -121,7 +121,7 @@ body{min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-
 .ucard>svg{width:100%;max-width:540px;height:auto;display:block;margin:2px auto 0}
 .uh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
 .uh h2{margin:0;font-size:15px;font-weight:800;color:var(--primary-ink);display:flex;gap:7px;align-items:center}
-.uh .sp{flex:1}
+.uh .sp{flex:1}.upl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}@media (max-width:600px){.upl{flex-direction:column;align-items:flex-end;gap:4px}}
 .ud{cursor:pointer}
 .ud:hover{fill:rgba(200,155,60,.28)}
 @keyframes ring{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.8);opacity:0}}
@@ -756,7 +756,7 @@ function renderHome(){
     $('#monsec').innerHTML='';$('#totsec').innerHTML='';$('#paysec').innerHTML='';return;
   }
   const tcI=clampIdx(ti);
-  $('#ucard').innerHTML=`<section class="sec card ucard"><div class="uh"><h2>${ic('cal')}مسار الجمعية</h2><span class="sp"></span><span class="pill gold">${ti<0?'تبدأ قريبًا · ':ti>=N?'انتهت · ':''}${MONTHS[monthPos(s,tcI).m]} ${monthPos(s,tcI).y} · الشهر ${tcI+1} من ${N}</span>${ti>=0&&ti<N-1?`<span class="pill">متبقٍ ${N-1-ti} شهرًا</span>`:''}</div>${ucurve(N,cursor)}</section>`;
+  $('#ucard').innerHTML=`<section class="sec card ucard"><div class="uh"><h2>${ic('cal')}مسار الجمعية</h2><span class="sp"></span><span class="upl"><span class="pill gold">${ti<0?'تبدأ قريبًا · ':ti>=N?'انتهت · ':''}${MONTHS[monthPos(s,tcI).m]} ${monthPos(s,tcI).y} · الشهر ${tcI+1} من ${N}</span>${ti>=0&&ti<N-1?`<span class="pill">متبقٍ ${N-1-ti} شهرًا</span>`:''}</span></div>${ucurve(N,cursor)}</section>`;
   const who=q?state.members.filter(m=>hitName(m.name)).slice(0,4):[];
   $('#whosec').innerHTML=who.map(m=>{
     const rows=sched.months.map(mo=>({mo,p:mo.payments.find(p=>p.id===m.id)})).filter(x=>x.p);

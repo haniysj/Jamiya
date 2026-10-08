@@ -47,7 +47,11 @@ button{font-family:inherit;cursor:pointer}
 .mark svg{width:30px;height:16px;fill:var(--gold)}
 .brand h1{margin:0;font-size:21px;font-weight:800;line-height:1.2;color:var(--primary-ink)}
 .brand p{margin:0;color:var(--muted);font-size:12.5px}
-.nav{display:flex;gap:8px}
+.nav{display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.navrow{display:flex;gap:8px}
+.theme.dg{border-color:var(--rust);color:var(--rust)}
+.bellbtn{width:100%;height:32px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700;font-size:12px;padding:0 8px;white-space:nowrap}
+.bellbtn.on{background:var(--gold-soft);color:var(--gold-ink);border-color:var(--gold)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px}
 .pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700;background:var(--primary-soft);color:var(--primary-ink);white-space:nowrap}
 .pill.gold{background:var(--gold-soft);color:var(--gold-ink)}
@@ -97,6 +101,12 @@ button{font-family:inherit;cursor:pointer}
 .pbar{height:9px;border-radius:99px;background:var(--surface2);overflow:hidden;margin:8px 0 10px}
 .pbar>i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .5s}
 .pchips{display:flex;flex-wrap:wrap;gap:6px}
+button.pchip{font-family:inherit;cursor:pointer}
+.pchip{color:var(--ink)}
+.pchip.cf{background:var(--rust-soft);color:var(--rust);border-color:var(--rust)}
+.urow2{border-top:1px solid var(--line);padding:4px 0}.urow2:first-child{border-top:0}
+.ib.dg{color:var(--rust);border-color:var(--rust)}
+.pk{display:flex;align-items:center;gap:8px;padding:3px 0;font-weight:600;font-size:13px}
 .pchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--chip);border-radius:999px;padding:3px 11px;font-size:13px;font-weight:600}
 .pchip .ic{width:1.05em;height:1.05em}
 .pchip.ok{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
@@ -252,6 +262,7 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
 <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
 <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></symbol>
+<symbol id="i-pen" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
 </defs></svg>
 <div id="app" dir="rtl" lang="ar"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" dir="rtl"></div>
@@ -386,6 +397,11 @@ let toolsOpen=false,toolsConfirm='',toolsMsg='',backupText='';
 let saveTimer=null,saveStatus='saved';
 let paid={},pushSubs={},payIdx=null,payAllConf=false,remBusy=false,pushOpen=false,pushMsg='',pushMine=null;
 try{pushMine=JSON.parse(localStorage.getItem('jamiya-push')||'null')}catch(e){}
+let perms=[],openML=true,editU=null,chipConf='';
+const ALLP=['pay','members','users'];
+const PERM_T={pay:'تأكيد الدفع والتذكير',members:'إدارة الأعضاء والإعدادات والبيانات',users:'إدارة المستخدمين'};
+const PERM_S={pay:'التحصيل',members:'الأعضاء',users:'المستخدمون'};
+const can=x=>!!user&&perms.includes(x);
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -413,19 +429,21 @@ window.addEventListener('pagehide',()=>{if(saveStatus==='dirty')Storage.save(sta
 /* ---------- الواجهة العامة ---------- */
 function headerHTML(){
   const s=state.settings,N=monthsCount(s),a=monthPos(s,0),b=monthPos(s,N-1);
-  let nav='';
-  if(view==='home')nav=user?`<button class="btn pri" data-act="go-admin">${ic('gear')}<span class="bl">لوحة التحكم</span></button><button class="btn danger" data-act="logout" aria-label="خروج">${ic('out')}<span class="bl">خروج</span></button>`
-    :`<button class="theme pri" data-act="go-login" aria-label="دخول الإدارة" title="دخول الإدارة">${ic('lock')}</button>`;
-  else if(view==='admin')nav=`<button class="btn" data-act="go-home" aria-label="الصفحة الرئيسية">${ic('home')}<span class="bl">الصفحة الرئيسية</span></button><button class="btn danger" data-act="logout" aria-label="خروج">${ic('out')}<span class="bl">خروج</span></button>`;
-  else nav=`<button class="btn" data-act="go-home" aria-label="الصفحة الرئيسية">${ic('home')}<span class="bl">الصفحة الرئيسية</span></button>`;
   const th=`<button class="theme" data-act="theme" aria-label="${theme==='dark'?'الوضع النهاري':'الوضع الليلي'}" title="${theme==='dark'?'الوضع النهاري':'الوضع الليلي'}">${ic(theme==='dark'?'sun':'moon')}</button>`;
-  nav=th+nav;
+  let row='',bell='';
+  if(view==='home'){
+    row=user?`<button class="theme pri" data-act="go-admin" aria-label="لوحة التحكم" title="لوحة التحكم">${ic('gear')}</button><button class="theme dg" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}</button>`
+      :`<button class="theme pri" data-act="go-login" aria-label="دخول الإدارة" title="دخول الإدارة">${ic('lock')}</button>`;
+    if(REMOTE)bell=`<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع">${ic('bell')}<span>التنبيهات</span></button>`;
+  }else if(view==='admin')row=`<button class="theme" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}</button><button class="theme dg" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}</button>`;
+  else row=`<button class="theme" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}</button>`;
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
-  <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p></div></div><nav class="nav">${nav}</nav></header>`;
+  <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p></div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
 }
 function render(){
+  if(view==='admin'){const t=TABS.find(x=>x[0]===tab);if(!t||!can(t[4]))tab=firstTab()}
   let body='';
-  if(view==='home')body=`<div id="stats"></div><div id="ucard"></div>
+  if(view==='home')body=`<div id="pushpanel"></div><div id="stats"></div><div id="ucard"></div>
     <section class="sec"><div class="search"><input id="q" type="text" placeholder="ابحث باسم العضو…" value="${esc(q)}" aria-label="بحث بالاسم" autocomplete="off">${ic('search')}<button class="qx" id="qx" data-act="clearq" aria-label="مسح البحث" ${q?'':'hidden'}>${ic('x')}</button></div></section>
     <section class="sec who" id="whosec"></section><section class="sec" id="tlsec"></section><section class="sec card" id="paysec"></section><section class="sec" id="monsec"></section><section class="sec" id="totsec"></section>`;
   else if(view==='login')body=loginHTML();
@@ -476,7 +494,7 @@ function renderHome(){
   const s=state.settings,sched=computeSchedule(state),N=sched.N;
   cursor=clampIdx(cursor);
   const oldM=document.querySelector('.mrows'),oldTop=oldM?oldM.scrollTop:0,ti=todayIdx();
-  $('#qx').hidden=!q;$('#whosec').innerHTML='';
+  $('#qx').hidden=!q;$('#whosec').innerHTML='';$('#pushpanel').innerHTML=pushPanelHTML();
   $('#stats').innerHTML=`${loadFailed?`<div class="demo" style="background:var(--rust-soft);color:var(--rust)">تعذّر الاتصال بقاعدة البيانات. أعد تحميل الصفحة.</div>`:''}${state.demo&&!loadFailed?`<div class="demo">بيانات تجريبية للمعاينة فقط — أدخل لوحة التحكم لاستبدالها بأعضاء الجمعية الحقيقيين.</div>`:''}
    <div class="stats"><div class="stat"><span>الأعضاء</span><b>${state.members.length}</b></div>
    <div class="stat"><span>الوعاء الشهري</span>${money(sched.pot)}</div>
@@ -522,31 +540,49 @@ function loginHTML(){
   <button class="btn pri" data-act="login" style="width:100%;justify-content:center">دخول</button>
   ${def?'<p class="hint">النسخة التجريبية: المستخدم admin وكلمة المرور admin123 (غيّرها من لوحة التحكم).</p>':''}</section>`;
 }
+async function afterAuth(){
+  if(can('users')){try{remoteUsers=await rpc('jamiya_users2',{p_u:creds.u,p_p:creds.p})||[]}catch(e){remoteUsers=[]}}
+  if(can('pay')){try{pushSubs=await rpc('jamiya_push_subs',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
+}
+async function restoreSession(){
+  if(!REMOTE)return;
+  let a=null;try{a=JSON.parse(localStorage.getItem('jamiya-auth')||'null')}catch(e){}
+  if(!a||!a.u||!a.p)return;
+  try{
+    const me=await rpc('jamiya_me',{p_u:a.u,p_p:a.p});
+    if(me){creds={u:a.u,p:a.p};user=a.u;perms=me.perms||[];await afterAuth()}
+    else{try{localStorage.removeItem('jamiya-auth')}catch(e){}}
+  }catch(e){}
+}
 async function doLogin(){
   const u=(($('#lu')||{}).value||'').trim(),p=($('#lp')||{}).value||'';
   const fail=m=>{loginErr=m;const e=$('#lerr');if(e)e.textContent=m};
   if(!REMOTE){
-    if(state.users.some(x=>x.u===u&&x.p===p)){user=u;loginErr='';view='admin';render()}
+    const x=state.users.find(y=>y.u===u&&y.p===p);
+    if(x){user=u;perms=x.perms||ALLP.slice();loginErr='';tab=firstTab();view='admin';render()}
     else fail('اسم المستخدم أو كلمة المرور غير صحيحة');
     return;
   }
   const e=$('#lerr');if(e)e.textContent='جارٍ التحقق…';
   try{
-    const ok=await rpc('jamiya_login',{p_u:u,p_p:p});
-    if(!ok){fail('اسم المستخدم أو كلمة المرور غير صحيحة');return}
-    creds={u,p};user=u;loginErr='';
-    try{remoteUsers=await rpc('jamiya_users',{p_u:u,p_p:p})||[]}catch(x){remoteUsers=[u]}
-    try{pushSubs=await rpc('jamiya_push_subs',{p_u:u,p_p:p})||{}}catch(x){}
-    view='admin';render();
+    const me=await rpc('jamiya_me',{p_u:u,p_p:p});
+    if(!me){fail('اسم المستخدم أو كلمة المرور غير صحيحة');return}
+    creds={u,p};user=u;perms=me.perms||[];loginErr='';
+    try{localStorage.setItem('jamiya-auth',JSON.stringify({u,p}))}catch(x){}
+    await afterAuth();
+    tab=firstTab();view='admin';render();
   }catch(x){fail('تعذّر الاتصال بقاعدة البيانات، حاول مرة أخرى.')}
 }
 
 /* ---------- لوحة التحكم ---------- */
-const TABS=[['members','الأعضاء','users','memBox'],['pay','التحصيل','check','payBox'],['settings','الإعدادات','gear','setBox'],['users','المستخدمون','lock','usrBox'],['data','البيانات','db','toolBox']];
+const TABS=[['members','الأعضاء','users','memBox','members'],['pay','التحصيل','check','payBox','pay'],['settings','الإعدادات','gear','setBox','members'],['users','المستخدمون','lock','usrBox','users'],['data','البيانات','db','toolBox','members']];
+const firstTab=()=>{const t=TABS.find(x=>can(x[4]));return t?t[0]:''};
 function adminHTML(){
+  const vis=TABS.filter(x=>can(x[4]));
+  if(!vis.length)return`<div class="abar"><h2>لوحة التحكم</h2></div><div class="card empty-box">لا توجد صلاحيات لهذا الحساب. تواصل مع مسؤول الجمعية.</div>`;
   return`<div class="abar"><h2>لوحة التحكم</h2><span class="save saved" id="saveSt"></span></div><div id="sumBox"></div>
-  <div class="tabs" role="tablist">${TABS.map(x=>`<button class="tab" role="tab" data-act="tab" data-t="${x[0]}" aria-selected="${tab===x[0]}">${ic(x[2])}${x[1]}</button>`).join('')}</div>
-  ${TABS.map(x=>`<div id="${x[3]}" class="card" ${tab===x[0]?'':'hidden'}></div>`).join('')}`;
+  <div class="tabs" role="tablist">${vis.map(x=>`<button class="tab" role="tab" data-act="tab" data-t="${x[0]}" aria-selected="${tab===x[0]}">${ic(x[2])}${x[1]}</button>`).join('')}</div>
+  ${TABS.map(x=>`<div id="${x[3]}" class="card" ${tab===x[0]&&can(x[4])?'':'hidden'}></div>`).join('')}`;
 }
 function renderSettings(){
   const s=state.settings;
@@ -601,44 +637,69 @@ function renderMembers(){
    ${draftPicker?picker(d.months,'draft'):''}${tagsHTML(d.months,'draft')}
    <div class="err">${esc(draftErr)}</div>
    <button class="btn pri" data-act="add">${ic('plus')}إضافة العضو</button></div>
-  ${state.members.length?state.members.map(memberRow).join(''):'<p class="hint">لا يوجد أعضاء بعد.</p>'}
+  <button class="coll" data-act="tg-ml" aria-expanded="${openML}" style="margin-top:8px">${ic('users')}قائمة الأعضاء<small>${state.members.length} عضوًا</small><span class="sp"></span>${ic('down','cv')}</button>
+  ${openML?(state.members.length?`<div>${state.members.map(memberRow).join('')}</div>`:'<p class="hint">لا يوجد أعضاء بعد.</p>'):''}
   <p class="hint">الترتيب بالأسهم يحدد أسبقية الأعضاء داخل نفس مجموعة موعد الاستلام. الأشهر المفضلة تُعيد ترتيب العضو داخل مجموعته فقط لتقترب دفعاته من الأشهر المختارة، دون أي تعارض.</p>`;
 }
+const listUsers=()=>REMOTE?remoteUsers:state.users.map(x=>({u:x.u,perms:x.perms||ALLP.slice()}));
+const permChecks=(arr)=>ALLP.map(k=>`<label class="pk"><input type="checkbox" data-pk="${k}" ${arr.includes(k)?'checked':''}>${PERM_T[k]}</label>`).join('');
 function renderUsers(){
-  const list=REMOTE?remoteUsers:state.users.map(x=>x.u);
-  const warn=REMOTE&&creds&&creds.p==='admin123'?'<div class="demo" style="margin:0 0 10px">كلمة المرور الحالية هي الافتراضية. غيّرها الآن من الحقل في الأسفل.</div>':'';
-  $('#usrBox').innerHTML=`<h3>${ic('lock')}مستخدمو لوحة التحكم</h3>${warn}<div class="ulist">${list.map(u=>`<div class="urow"><b>${esc(u)}</b>${u===user?'<span class="pill">أنت</span>':`<button class="btn sm danger" data-act="udel" data-u="${esc(u)}">${ic('trash')}حذف</button>`}</div>`).join('')}</div>
-  <div class="grid2" style="margin-top:10px;align-items:end"><div class="fld"><span>مستخدم جديد</span><input class="in" id="nu" autocapitalize="off"></div><div class="fld"><span>كلمة المرور</span><input class="in" id="np" type="text" autocapitalize="off"></div>
-  <button class="btn" data-act="uadd">${ic('plus')}إضافة مستخدم</button></div>
-  ${REMOTE?`<div class="grid2" style="margin-top:12px;align-items:end"><div class="fld"><span>كلمة مرور جديدة لحسابك (${esc(user||'')})</span><input class="in" id="cp" type="text" autocapitalize="off"></div><button class="btn" data-act="cpw">تغيير كلمة المرور</button></div>`:''}
+  const list=listUsers();
+  const warn=REMOTE&&creds&&creds.p==='admin123'?'<div class="demo" style="margin:0 0 10px">كلمة المرور الحالية هي الافتراضية. اضغط رمز التعديل بجانب اسمك لتغييرها.</div>':'';
+  const rows=list.map(x=>{
+    const me=x.u===user,ed=editU&&editU.orig===x.u;
+    const pills=(x.perms||[]).map(k=>`<span class="pill">${PERM_S[k]||k}</span>`).join('')||'<span class="none">بدون صلاحيات</span>';
+    return`<div class="urow2"><div class="urow"><div style="flex:1;min-width:0"><b>${esc(x.u)}</b>${me?' <span class="pill gold">أنت</span>':''}<div class="tags">${pills}</div></div>
+      <button class="ib" data-act="uedit" data-u="${esc(x.u)}" aria-label="تعديل المستخدم" title="تعديل">${ic('pen')}</button>${me?'':`<button class="ib dg" data-act="udel" data-u="${esc(x.u)}" aria-label="حذف المستخدم" title="حذف">${ic('trash')}</button>`}</div>
+      ${ed?`<div class="addbox" id="editbox"><div class="grid2"><div class="fld"><span>اسم المستخدم</span><input class="in" id="eu-n" value="${esc(editU.name)}" autocapitalize="off"></div><div class="fld"><span>كلمة مرور جديدة (اتركها فارغة لعدم التغيير)</span><input class="in" id="eu-p" type="text" autocapitalize="off" autocomplete="off"></div></div>
+      <div class="lbl" style="margin:8px 0 2px">الصلاحيات</div><div id="editperm">${permChecks(editU.perms)}</div>
+      <div class="err" id="uerr2"></div><div style="display:flex;gap:8px"><button class="btn pri sm" data-act="usave">${ic('check')}حفظ</button><button class="btn sm" data-act="ucancel">إلغاء</button></div></div>`:''}</div>`}).join('');
+  $('#usrBox').innerHTML=`<h3>${ic('lock')}مستخدمو لوحة التحكم</h3>${warn}<div class="ulist">${rows}</div>
+  <div class="addbox" style="margin-top:12px"><div class="lbl" style="margin-bottom:6px">إضافة مستخدم</div><div class="grid2" style="align-items:end"><div class="fld"><span>اسم المستخدم</span><input class="in" id="nu" autocapitalize="off"></div><div class="fld"><span>كلمة المرور</span><input class="in" id="np" type="text" autocapitalize="off"></div></div>
+  <div class="lbl" style="margin:8px 0 2px">الصلاحيات</div><div id="addperm">${permChecks(['pay'])}</div>
+  <div style="margin-top:6px"><button class="btn sm" data-act="uadd">${ic('plus')}إضافة مستخدم</button></div></div>
   <div class="err" id="uerr"></div>`;
 }
 async function userAction(kind,arg){
-  const er=$('#uerr'),say=m=>{if(er)er.textContent=m};
-  if(!REMOTE){
-    if(kind==='add'){
-      const u=($('#nu').value||'').trim(),p=$('#np').value||'';
-      if(!u||!p)return say('اكتب اسم المستخدم وكلمة المرور.');
-      if(state.users.some(x=>x.u===u))return say('اسم المستخدم موجود مسبقًا.');
-      state.users.push({u,p});touch();renderUsers();
-    }else if(kind==='del'){
-      if(arg!==user&&state.users.length>1){state.users=state.users.filter(x=>x.u!==arg);touch();renderUsers()}
-    }
-    return;
-  }
+  const say=m=>{const e=$('#uerr2')||$('#uerr');if(e)e.textContent=m};
+  const getp=sel=>[...document.querySelectorAll(sel+' [data-pk]')].filter(c=>c.checked).map(c=>c.dataset.pk);
+  const mapErr=e=>/exists/.test(e.message)?'اسم المستخدم موجود مسبقًا.':/last_admin/.test(e.message)?'يجب أن يبقى مستخدم واحد على الأقل بصلاحية إدارة المستخدمين.':/forbidden|42501/.test(e.message)?'ليس لديك صلاحية.':'تعذّر تنفيذ العملية.';
   try{
     if(kind==='add'){
-      const u=($('#nu').value||'').trim(),p=$('#np').value||'';
+      const u=($('#nu').value||'').trim(),p=$('#np').value||'',pm=getp('#addperm');
       if(!u||!p)return say('اكتب اسم المستخدم وكلمة المرور.');
-      await rpc('jamiya_add_user',{p_u:creds.u,p_p:creds.p,p_nu:u,p_np:p});toast('تمت إضافة المستخدم');
+      if(!REMOTE){
+        if(state.users.some(x=>x.u===u))return say('اسم المستخدم موجود مسبقًا.');
+        state.users.push({u,p,perms:pm});touch();
+      }else{await rpc('jamiya_add_user2',{p_u:creds.u,p_p:creds.p,p_nu:u,p_np:p,p_perms:pm});toast('تمت إضافة المستخدم')}
     }else if(kind==='del'){
-      await rpc('jamiya_del_user',{p_u:creds.u,p_p:creds.p,p_du:arg});toast('تم حذف المستخدم');
-    }else if(kind==='pw'){
-      const np=$('#cp').value||'';if(np.length<6)return say('كلمة المرور يجب ألا تقل عن 6 أحرف.');
-      await rpc('jamiya_change_password',{p_u:creds.u,p_p:creds.p,p_np:np});creds.p=np;toast('تم تغيير كلمة المرور');
+      if(!REMOTE){if(arg!==user&&state.users.length>1){state.users=state.users.filter(x=>x.u!==arg);touch()}}
+      else{await rpc('jamiya_del_user',{p_u:creds.u,p_p:creds.p,p_du:arg});toast('تم حذف المستخدم')}
+    }else if(kind==='save'){
+      const orig=editU.orig,nn=($('#eu-n').value||'').trim(),np=$('#eu-p').value||'',pm=getp('#editperm');
+      if(!nn)return say('اسم المستخدم مطلوب.');
+      if(np&&np.length<6)return say('كلمة المرور يجب ألا تقل عن 6 أحرف.');
+      if(!REMOTE){
+        if(nn!==orig&&state.users.some(x=>x.u===nn))return say('اسم المستخدم موجود مسبقًا.');
+        const x=state.users.find(y=>y.u===orig);
+        if(x){x.u=nn;if(np)x.p=np;x.perms=pm}
+        if(orig===user){user=nn;perms=pm}
+        touch();
+      }else{
+        await rpc('jamiya_update_user',{p_u:creds.u,p_p:creds.p,p_target:orig,p_newname:nn===orig?null:nn,p_newpass:np||null,p_perms:pm});
+        if(orig===creds.u){
+          creds={u:nn,p:np||creds.p};user=nn;perms=pm;
+          try{localStorage.setItem('jamiya-auth',JSON.stringify(creds))}catch(e){}
+          editU=null;toast('تم حفظ التعديلات');
+          await afterAuth();render();return;
+        }
+        toast('تم حفظ التعديلات');
+      }
+      editU=null;
     }
-    remoteUsers=await rpc('jamiya_users',{p_u:creds.u,p_p:creds.p})||[];renderUsers();
-  }catch(x){say(/exists/.test(x.message)?'اسم المستخدم موجود مسبقًا.':'تعذّر تنفيذ العملية.')}
+    if(REMOTE&&can('users'))remoteUsers=await rpc('jamiya_users2',{p_u:creds.u,p_p:creds.p})||[];
+    renderUsers();
+  }catch(x){say(mapErr(x))}
 }
 function renderTools(){
   const conf=k=>toolsConfirm===k;
@@ -657,35 +718,41 @@ const isPaid=(k,id)=>(paid[k]||[]).includes(id);
 const payMonth=()=>clampIdx(payIdx===null?todayIdx():payIdx);
 async function loadPaid(){if(!REMOTE)return;try{const x=await rpc('jamiya_payments');if(x&&typeof x==='object')paid=x}catch(e){}}
 async function refreshSubs(){
-  if(REMOTE&&creds){await loadPaid();try{pushSubs=await rpc('jamiya_push_subs',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
+  if(REMOTE&&creds&&can('pay')){await loadPaid();try{pushSubs=await rpc('jamiya_push_subs',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
   renderPay();
 }
 const pushOK='serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
 const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const isStandalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
 const pushOn=()=>!!(pushMine&&pushOK&&Notification.permission==='granted');
+function pushPanelHTML(){
+  if(!REMOTE||!pushOpen)return'';
+  const mine=pushMine&&find(pushMine.m),cl=`<button class="btn sm" data-act="pushtog">إغلاق</button>`;
+  let inner;
+  if(pushOn()&&mine)inner=`<div class="row"><span class="pill gold">${ic('bell')}التنبيهات مفعّلة لـ ${esc(mine.name)}</span><button class="btn sm danger" data-act="pushoff">إيقاف التنبيهات</button>${cl}</div>`;
+  else if(isIOS&&!isStandalone)inner=`<div>على الآيفون: اضغط زر المشاركة في سفاري، ثم «إضافة إلى الشاشة الرئيسية». افتح الجمعية من أيقونتها على الشاشة الرئيسية، ثم اضغط «التنبيهات» مرة أخرى.</div><div class="row">${cl}</div>`;
+  else if(!pushOK)inner=`<div>هذا المتصفح لا يدعم التنبيهات. جرّب Chrome أو Safari الحديث.</div><div class="row">${cl}</div>`;
+  else inner=`<div class="lbl">اختر اسمك ليصلك التذكير بموعد الدفع:</div><div class="row"><select id="pushm"><option value="">— اختر اسمك —</option>${state.members.filter(m=>toInt(m.monthly)>0).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select><button class="btn pri sm" data-act="pushon">${ic('bell')}تفعيل</button>${cl}</div><div class="err">${esc(pushMsg)}</div>`;
+  return`<section class="card ppanel" style="margin-top:12px">${inner}</section>`;
+}
+function pushUI(){const h=document.querySelector('header.top');if(h)h.outerHTML=headerHTML();if(view==='home')renderHome()}
 function paySecHTML(){
-  const s=state.settings,i=clampIdx(cursor),k=monthKey(s,i),mp=monthPos(s,i),ti=todayIdx(),future=i>ti;
+  const s=state.settings,i=clampIdx(cursor),k=monthKey(s,i),mp=monthPos(s,i),ti=todayIdx(),future=i>ti,cp=can('pay');
   const list=state.members.filter(m=>toInt(m.monthly)>0),done=list.filter(m=>isPaid(k,m.id));
   const sum=done.reduce((a,m)=>a+toInt(m.monthly),0),tot=list.reduce((a,m)=>a+toInt(m.monthly),0);
   const pct=tot?Math.round(sum*100/tot):0;
   const shown=list.filter(m=>hitName(m.name));
-  const chips=shown.map(m=>{const ok=isPaid(k,m.id);return`<span class="pchip ${ok?'ok':future?'':'wait'}">${ok?ic('check'):future?'':ic('clock')}<span>${esc(m.name)}</span></span>`}).join('')||'<span class="none">لا توجد نتائج مطابقة.</span>';
-  const mine=pushMine&&find(pushMine.m);
-  let ctl='';
-  if(REMOTE)ctl=pushOn()&&mine?`<span class="pill gold">${ic('bell')}التنبيهات مفعّلة: ${esc(mine.name)}</span><button class="btn sm" data-act="pushoff">إيقاف</button>`:`<button class="btn sm" data-act="pushtog">${ic('bell')}فعّل التنبيهات</button>`;
-  let panel='';
-  if(REMOTE&&pushOpen&&!(pushOn()&&mine)){
-    if(isIOS&&!isStandalone)panel=`<div class="ppanel"><div>على الآيفون: اضغط زر المشاركة في سفاري، ثم «إضافة إلى الشاشة الرئيسية». افتح الجمعية من أيقونتها على الشاشة الرئيسية، ثم اضغط «فعّل التنبيهات» مرة أخرى.</div></div>`;
-    else if(!pushOK)panel=`<div class="ppanel"><div>هذا المتصفح لا يدعم التنبيهات. جرّب Chrome أو Safari الحديث.</div></div>`;
-    else panel=`<div class="ppanel"><div class="lbl">اختر اسمك ليصلك التذكير بموعد الدفع:</div><div class="row"><select id="pushm"><option value="">— اختر اسمك —</option>${state.members.filter(m=>toInt(m.monthly)>0).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select><button class="btn pri sm" data-act="pushon">${ic('bell')}تفعيل</button></div><div class="err">${esc(pushMsg)}</div></div>`;
-  }
-  return`<div class="ptop"><h2>${ic('check')}التحصيل · ${MONTHS[mp.m]} ${mp.y}</h2><span class="sp"></span>${ctl}</div>
-  ${panel}
+  const chips=shown.map(m=>{
+    const ok=isPaid(k,m.id),cf=chipConf===m.id,cls=`pchip ${ok?'ok':future?'':'wait'}${cf?' cf':''}`;
+    const inner=`${ok?ic('check'):future?'':ic('clock')}<span>${cf?'إلغاء التأكيد؟':esc(m.name)}</span>`;
+    return cp?`<button type="button" class="${cls}" data-act="chippay" data-id="${m.id}">${inner}</button>`:`<span class="${cls}">${inner}</span>`;
+  }).join('')||'<span class="none">لا توجد نتائج مطابقة.</span>';
+  return`<div class="ptop"><h2>${ic('check')}التحصيل · ${MONTHS[mp.m]} ${mp.y}</h2></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px"><span class="pill okp">${ic('check')}دفع ${done.length} من ${list.length}</span><span class="stat" style="padding:1px 10px"><span>المحصّل</span>${money(sum)}<span>من</span>${money(tot)}</span></div>
   <div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
   ${future&&!done.length?'<div class="pnote">لم يحن موعد دفع هذا الشهر بعد.</div>':''}
-  <div class="pchips">${chips}</div>`;
+  <div class="pchips">${chips}</div>
+  ${cp?'<div class="pnote">اضغط على الاسم لتأكيد دفعه. ولإلغاء التأكيد اضغط مرتين.</div>':''}`;
 }
 function renderPay(){
   const e=$('#payBox');if(!e)return;
@@ -703,21 +770,22 @@ function renderPay(){
   ${REMOTE?`<button class="btn sm" data-act="remindall" ${!isNow||remBusy?'disabled':''}>${ic('bell')}ذكّر كل المتأخرين</button>`:''}</div>
   <p class="hint">${REMOTE?`التذكير التلقائي يوم 23 ويوم 27 الساعة 9 صباحًا بتوقيت مسقط، للمتأخرين فقط. فعّل التنبيهات: ${subsN} من ${list.length}. زر «ذكّر» متاح للشهر الحالي ولمن فعّل التنبيهات.`:'التنبيهات تعمل في النسخة المنشورة فقط.'}</p>`;
 }
-async function setPaid(id,v){
-  const k=monthKey(state.settings,payMonth()),prev=paid[k]||[];
-  paid={...paid,[k]:prev.filter(x=>x!==id).concat(v?[id]:[])};renderPay();
+function refreshPay(){if(view==='admin')renderPay();else if(view==='home'){const e=$('#paysec');if(e)e.innerHTML=paySecHTML()}}
+async function setPaid(id,v,idx){
+  const k=monthKey(state.settings,idx===undefined?payMonth():idx),prev=paid[k]||[];
+  paid={...paid,[k]:prev.filter(x=>x!==id).concat(v?[id]:[])};refreshPay();
   if(!REMOTE){touch();return}
   try{await rpc('jamiya_set_paid',{p_u:creds.u,p_p:creds.p,p_month:k,p_member:id,p_paid:v})}
-  catch(e){paid={...paid,[k]:prev};renderPay();toast('تعذّر حفظ الدفع')}
+  catch(e){paid={...paid,[k]:prev};refreshPay();toast(/forbidden|42501/.test(e.message)?'ليس لديك صلاحية تأكيد الدفع':'تعذّر حفظ الدفع')}
 }
 async function payAllDo(){
   const k=monthKey(state.settings,payMonth()),prev=paid[k]||[];
   const ids=state.members.filter(m=>toInt(m.monthly)>0&&!prev.includes(m.id)).map(m=>m.id);
   if(!ids.length)return;
-  paid={...paid,[k]:prev.concat(ids)};renderPay();
+  paid={...paid,[k]:prev.concat(ids)};refreshPay();
   if(!REMOTE){touch();return}
   try{await rpc('jamiya_set_paid_many',{p_u:creds.u,p_p:creds.p,p_month:k,p_members:ids});toast('تم تأكيد دفع الجميع')}
-  catch(e){paid={...paid,[k]:prev};renderPay();toast('تعذّر حفظ الدفع')}
+  catch(e){paid={...paid,[k]:prev};refreshPay();toast('تعذّر حفظ الدفع')}
 }
 async function remind(memberId){
   if(!REMOTE||!creds||remBusy)return;
@@ -745,7 +813,7 @@ async function pushEnable(){
     const j=sub.toJSON();
     await rpc('jamiya_push_subscribe',{p_member:id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth});
     pushMine={m:id};try{localStorage.setItem('jamiya-push',JSON.stringify(pushMine))}catch(e){}
-    pushOpen=false;pushMsg='';renderHome();toast('تم تفعيل التنبيهات');
+    pushOpen=false;pushMsg='';pushUI();toast('تم تفعيل التنبيهات');
   }catch(e){say('تعذّر التفعيل. تأكد من الاتصال وحاول مرة أخرى.')}
 }
 async function pushDisable(){
@@ -755,7 +823,7 @@ async function pushDisable(){
     if(sub){try{await rpc('jamiya_push_unsubscribe',{p_endpoint:sub.endpoint})}catch(e){}await sub.unsubscribe()}
   }catch(e){}
   pushMine=null;try{localStorage.removeItem('jamiya-push')}catch(e){}
-  renderHome();toast('تم إيقاف التنبيهات');
+  pushUI();toast('تم إيقاف التنبيهات');
 }
 
 /* ---------- الأحداث ---------- */
@@ -774,13 +842,14 @@ function click(e){
   if(confirmDel&&act!=='del'){confirmDel=null;if(view==='admin')renderMembers()}
   if(toolsConfirm&&!['demo','clear','restore'].includes(act)){toolsConfirm='';if(view==='admin')renderTools()}
   if(payAllConf&&act!=='payall'){payAllConf=false;if(view==='admin')renderPay()}
+  if(chipConf&&act!=='chippay'){chipConf='';refreshPay()}
   if(!b)return;
   const id=b.dataset.id;
   switch(act){
     case'go-login':loginErr='';view='login';render();break;
     case'go-home':view='home';render();break;
     case'go-admin':view='admin';render();break;
-    case'logout':user=null;creds=null;view='home';render();break;
+    case'logout':user=null;creds=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
     case'login':doLogin();break;
     case'prev':go(-1);break;
     case'next':go(1);break;
@@ -812,14 +881,22 @@ function click(e){
       renderMembers();break;
     case'uadd':userAction('add');break;
     case'udel':userAction('del',b.dataset.u);break;
-    case'cpw':userAction('pw');break;
+    case'uedit':{const x=listUsers().find(y=>y.u===b.dataset.u);if(x){editU={orig:x.u,name:x.u,perms:(x.perms||[]).slice()};renderUsers()}break}
+    case'usave':userAction('save');break;
+    case'ucancel':editU=null;renderUsers();break;
+    case'tg-ml':openML=!openML;renderMembers();break;
+    case'chippay':{
+      const i=clampIdx(cursor),k=monthKey(state.settings,i);
+      if(isPaid(k,id)){if(chipConf===id){chipConf='';setPaid(id,false,i)}else{chipConf=id;refreshPay()}}
+      else{chipConf='';setPaid(id,true,i)}
+      break}
     case'paynav':payIdx=clampIdx(payMonth()+(+b.dataset.d));payAllConf=false;renderPay();break;
     case'paytog':setPaid(id,true);break;
     case'payundo':setPaid(id,false);break;
     case'payall':if(payAllConf){payAllConf=false;payAllDo()}else{payAllConf=true;renderPay()}break;
     case'remind':remind(id);break;
     case'remindall':remind('');break;
-    case'pushtog':pushOpen=!pushOpen;pushMsg='';renderHome();break;
+    case'pushtog':pushOpen=!pushOpen;pushMsg='';pushUI();break;
     case'pushon':pushEnable();break;
     case'pushoff':pushDisable();break;
     case'showbk':toolsOpen=!toolsOpen;backupText=JSON.stringify({settings:state.settings,members:state.members},null,1);toolsMsg='';renderTools();break;
@@ -924,11 +1001,12 @@ app.addEventListener('pointercancel',endDrag);
   let th='light';try{th=localStorage.getItem('jamiya-theme')||'light'}catch(e){}
   applyTheme(th==='dark'?'dark':'light');
   state=normalize(await Storage.load())||defaultData();
-  if(REMOTE)await loadPaid();else paid=state.pay||{};
+  if(REMOTE)await Promise.all([loadPaid(),restoreSession()]);else paid=state.pay||{};
   draft=newDraft();cursor=clampIdx(todayIdx());
   render();
   if(REMOTE)document.addEventListener('visibilitychange',async()=>{
-    if(document.visibilityState!=='visible'||user||view==='login')return;
+    if(document.visibilityState!=='visible'||view==='login')return;
+    if(user){await loadPaid();refreshPay();return}
     await loadPaid();const d=normalize(await Storage.load());if(d){state=d;if(view==='home')renderHome()}else if(view==='home')renderHome()
   });
 })();

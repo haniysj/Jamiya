@@ -77,6 +77,17 @@ button{font-family:inherit;cursor:pointer}
 .onbc p{margin:0;text-align:center;color:var(--muted);font-size:13px}
 .phn{display:flex;gap:8px;align-items:center}.phn b{padding:0 10px;height:42px;display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface2);font-size:14px}.phn .in{flex:1;min-width:0}
 .onbskip{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:none;border:0;color:var(--muted);font:inherit;font-size:12px;text-decoration:underline;padding:8px 16px;cursor:pointer}
+
+.nrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.nrow .nl{grid-column:1/-1}.nrow select{width:100%}
+.nrow:last-of-type{border-bottom:0}
+.nrow .nl{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;min-width:0}
+.nrow .nl input{width:18px;height:18px;accent-color:var(--primary)}
+.nrow.off .nl{opacity:.55}
+.nrow select{height:36px;padding:0 8px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px}
+.ntxt{width:100%;min-height:84px;resize:vertical;font:inherit}
+.ncnt{font-size:11.5px;color:var(--muted);text-align:left}
+.nsel{display:flex;flex-wrap:wrap;gap:6px}.nsel label{display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;background:var(--surface)}
+.nres{font-size:13px;font-weight:700;color:var(--primary-ink)}
 .stat.inl{flex:none;flex-direction:row;align-items:center;gap:6px;padding:2px 10px;font-size:13px}.stat.inl span{font-size:13px}
 .ord{display:flex;align-items:center;gap:6px;margin-inline-start:auto;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
 .mtg{width:34px;height:34px}.mtg svg{transition:transform .2s}.mtg[aria-expanded="true"] svg{transform:rotate(180deg)}
@@ -420,9 +431,9 @@ let saveTimer=null,saveStatus='saved';
 let paid={},pushSubs={},payIdx=null,payAllConf=false,remBusy=false,pushOpen=false,pushMsg='',pushMine=null;
 try{pushMine=JSON.parse(localStorage.getItem('jamiya-push')||'null')}catch(e){}
 let phones={},onb=false,perms=[],openMem=new Set(),openML=true,editU=null,chipConf='';
-const ALLP=['pay','members','users'];
-const PERM_T={pay:'تأكيد الدفع والتذكير',members:'إدارة الأعضاء والإعدادات والبيانات',users:'إدارة المستخدمين'};
-const PERM_S={pay:'التحصيل',members:'الأعضاء',users:'المستخدمون'};
+const ALLP=['pay','members','users','notify'];
+const PERM_T={pay:'تأكيد الدفع والتذكير',members:'إدارة الأعضاء والإعدادات والبيانات',users:'إدارة المستخدمين',notify:'إرسال وجدولة التنبيهات'};
+const PERM_S={pay:'التحصيل',members:'الأعضاء',users:'المستخدمون',notify:'التنبيهات'};
 const can=x=>!!user&&perms.includes(x);
 
 const $=s=>document.querySelector(s);
@@ -505,7 +516,7 @@ function render(){
   else body=adminHTML();
   $('#app').innerHTML=`<div class="wrap">${headerHTML()}${body}<div class="foot">إعداد: هاني الغطريفي</div></div>${view==='home'&&onb?onbHTML():''}`;
   if(view==='home')renderHome();
-  if(view==='admin'){renderSettings();renderSummary();renderMembers();renderPay();renderUsers();renderTools();setStatus(saveStatus)}
+  if(view==='admin'){renderSettings();renderSummary();renderMembers();renderPay();renderUsers();renderTools();renderNotif();setStatus(saveStatus)}
 }
 
 /* ---------- الصفحة الرئيسية ---------- */
@@ -598,6 +609,7 @@ function loginHTML(){
 async function afterAuth(){
   if(can('users')){try{remoteUsers=await rpc('jamiya_users2',{p_u:creds.u,p_p:creds.p})||[]}catch(e){remoteUsers=[]}}
   if(can('members')||can('pay')){try{phones=await rpc('jamiya_phones',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
+  if(can('notify')){await loadNotif()}
   if(can('pay')){try{pushSubs=await rpc('jamiya_push_subs',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
 }
 async function restoreSession(){
@@ -631,10 +643,10 @@ async function doLogin(){
 }
 
 /* ---------- لوحة التحكم ---------- */
-const TABS=[['members','الأعضاء','users','memBox','members'],['pay','التحصيل','check','payBox','pay'],['settings','الإعدادات','gear','setBox','members'],['users','المستخدمون','lock','usrBox','users'],['data','البيانات','db','toolBox','members']];
+const TABS=[['members','الأعضاء','users','memBox','members'],['pay','التحصيل','check','payBox','pay'],['settings','الإعدادات','gear','setBox','members'],['users','المستخدمون','lock','usrBox','users'],['data','البيانات','db','toolBox','members'],['notif','التنبيهات','bell','notBox','notify']];
 const firstTab=()=>{const t=TABS.find(x=>can(x[4]));return t?t[0]:''};
 function adminHTML(){
-  const vis=TABS.filter(x=>can(x[4]));
+  const vis=TABS.filter(x=>can(x[4])&&(REMOTE||x[0]!=='notif'));
   if(!vis.length)return`<div class="abar"><h2>لوحة التحكم</h2></div><div class="card empty-box">لا توجد صلاحيات لهذا الحساب. تواصل مع مسؤول الجمعية.</div>`;
   return`<div class="abar"><h2>لوحة التحكم</h2><span class="save saved" id="saveSt"></span></div><div id="sumBox"></div>
   <div class="tabs" role="tablist">${vis.map(x=>`<button class="tab" role="tab" data-act="tab" data-t="${x[0]}" aria-selected="${tab===x[0]}">${ic(x[2])}${x[1]}</button>`).join('')}</div>
@@ -764,6 +776,56 @@ async function userAction(kind,arg){
     if(REMOTE&&can('users'))remoteUsers=await rpc('jamiya_users2',{p_u:creds.u,p_p:creds.p})||[];
     renderUsers();
   }catch(x){say(mapErr(x))}
+}
+
+const NEV=[['pay1','تذكير الدفع (الأول)'],['pay2','تذكير الدفع (الثاني)'],['turn','تنبيه صاحب الدور'],['milestone','محطات الجمعية (الأطوار ومنتصف المدة)'],['tip','نصيحة مالية']];
+const NDEF={pay1:{on:true,day:23,hour:9},pay2:{on:true,day:27,hour:9},turn:{on:true,day:1,hour:9},milestone:{on:true,day:1,hour:9},tip:{on:true,day:15,hour:18}};
+let notifCfg=JSON.parse(JSON.stringify(NDEF)),ntD={title:'',text:'',aud:'all',sel:[]},ntConf=false,ntBusy=false,ntRes='',ntTimer=null;
+const hourLbl=h=>{const p=h<12?'ص':'م',x=h%12||12;return x+':00 '+p};
+async function loadNotif(){
+  try{const c=await rpc('jamiya_notif_get',{p_u:creds.u,p_p:creds.p})||{};
+    notifCfg=JSON.parse(JSON.stringify(NDEF));
+    Object.keys(NDEF).forEach(k=>{if(c[k])notifCfg[k]={on:c[k].on!==false,day:+c[k].day||NDEF[k].day,hour:c[k].hour===undefined?NDEF[k].hour:+c[k].hour}})}
+  catch(e){}
+}
+function renderNotif(){
+  const e=$('#notBox');if(!e)return;
+  const ms=state.members.filter(m=>toInt(m.monthly)>0);
+  e.innerHTML=`<h3>${ic('bell')}التنبيهات</h3>
+  <p class="hint" style="margin-top:0">الجدول التلقائي (بتوقيت مسقط). غيّر اليوم أو الساعة وسيُحفظ مباشرة.</p>
+  ${NEV.map(([k,l])=>{const c=notifCfg[k];return`<div class="nrow${c.on?'':' off'}"><label class="nl"><input type="checkbox" data-nc="${k}.on" ${c.on?'checked':''}><span>${l}</span></label>
+   <select data-nc="${k}.day" aria-label="اليوم من الشهر">${Array.from({length:28},(_,i)=>`<option value="${i+1}" ${c.day===i+1?'selected':''}>يوم ${i+1}</option>`).join('')}</select>
+   <select data-nc="${k}.hour" aria-label="الساعة">${Array.from({length:24},(_,i)=>`<option value="${i}" ${c.hour===i?'selected':''}>${hourLbl(i)}</option>`).join('')}</select></div>`}).join('')}
+  <h3 style="margin-top:18px">${ic('bell')}رسالة مخصصة</h3>
+  <div class="fld"><span>العنوان (اختياري)</span><input class="in" data-nm="title" maxlength="60" value="${esc(ntD.title)}" placeholder="${esc(state.settings.name)}"></div>
+  <div class="fld" style="margin-top:8px"><span>نص الرسالة</span><textarea class="in ntxt" data-nm="text" maxlength="300" placeholder="اكتب رسالتك للأعضاء…">${esc(ntD.text)}</textarea><div class="ncnt" id="ntcnt">${ntD.text.length} / 300</div></div>
+  <div class="fld" style="margin-top:8px"><span>المستلمون</span><select data-nm="aud"><option value="all" ${ntD.aud==='all'?'selected':''}>جميع الأعضاء</option><option value="unpaid" ${ntD.aud==='unpaid'?'selected':''}>المتأخرون في دفع هذا الشهر</option><option value="members" ${ntD.aud==='members'?'selected':''}>أعضاء محددون</option></select></div>
+  ${ntD.aud==='members'?`<div class="nsel" style="margin-top:8px">${ms.map(m=>`<label><input type="checkbox" data-ns="${m.id}" ${ntD.sel.includes(m.id)?'checked':''}>${esc(m.name)}</label>`).join('')}</div>`:''}
+  <div class="err" id="nterr"></div>
+  <button class="btn pri" data-act="ntsend" ${ntBusy?'disabled':''} style="margin-top:8px">${ic('bell')}${ntBusy?'جارٍ الإرسال…':ntConf?'تأكيد الإرسال الآن؟':'إرسال التنبيه'}</button>
+  ${ntRes?`<div class="nres" style="margin-top:8px">${esc(ntRes)}</div>`:''}
+  <p class="hint">يصل التنبيه لمن فعّل التنبيهات من الأعضاء فقط.</p>`;
+}
+function saveNotif(){
+  clearTimeout(ntTimer);
+  ntTimer=setTimeout(async()=>{
+    try{await rpc('jamiya_notif_set',{p_u:creds.u,p_p:creds.p,p_cfg:notifCfg});toast('تم حفظ الجدول')}
+    catch(e){toast('تعذّر حفظ الجدول')}
+  },500);
+}
+async function ntSend(){
+  const say=m=>{const x=$('#nterr');if(x)x.textContent=m};
+  if(!ntD.text.trim())return say('اكتب نص الرسالة أولًا.');
+  if(ntD.aud==='members'&&!ntD.sel.length)return say('اختر عضوًا واحدًا على الأقل.');
+  if(!ntConf){ntConf=true;renderNotif();return}
+  ntConf=false;ntBusy=true;ntRes='';renderNotif();
+  try{
+    const r=await fetch(CFG.supabaseUrl+'/functions/v1/jamiya-push',{method:'POST',headers:{'Content-Type':'application/json','apikey':CFG.supabaseKey},body:JSON.stringify({mode:'now',kind:'custom',u:creds.u,p:creds.p,title:ntD.title,text:ntD.text,audience:ntD.aud,members:ntD.sel})});
+    const j=await r.json();if(!r.ok)throw new Error(j.error||'x');
+    ntRes=j.sent?`تم الإرسال إلى ${j.sent} جهاز (${j.members} عضو).`:'لا أحد من المستلمين فعّل التنبيهات بعد.';
+    if(j.sent){ntD.text='';ntD.title=''}
+  }catch(e){ntRes=/forbidden/.test(e.message)?'ليست لديك صلاحية إرسال التنبيهات.':'تعذّر الإرسال، حاول مرة أخرى.'}
+  ntBusy=false;renderNotif();
 }
 function renderTools(){
   const conf=k=>toolsConfirm===k;
@@ -949,6 +1011,7 @@ function click(e){
     case'usave':userAction('save');break;
     case'ucancel':editU=null;renderUsers();break;
     case'tg-mem':openMem.has(id)?openMem.delete(id):openMem.add(id);renderMembers();break;
+    case'ntsend':ntSend();break;
     case'onb-go':onbGo();break;
     case'onb-push':onbPush();break;
     case'onb-skip':onbClose();break;
@@ -986,6 +1049,12 @@ function click(e){
 }
 function input(e){
   const t=e.target;
+  if(t.dataset.nc){const[k,f]=t.dataset.nc.split('.');const c=notifCfg[k];if(!c)return;
+    if(f==='on'){c.on=t.checked;const r=t.closest('.nrow');if(r)r.classList.toggle('off',!c.on)}else c[f]=+t.value;saveNotif();return}
+  if(t.dataset.nm){const k=t.dataset.nm;ntD[k]=t.value;ntConf=false;
+    if(k==='text'){const x=$('#ntcnt');if(x)x.textContent=t.value.length+' / 300'}
+    if(k==='aud'&&e.type==='change')renderNotif();return}
+  if(t.dataset.ns){const i=ntD.sel.indexOf(t.dataset.ns);if(t.checked&&i<0)ntD.sel.push(t.dataset.ns);if(!t.checked&&i>=0)ntD.sel.splice(i,1);ntConf=false;return}
   if(t.dataset.ph){if(e.type==='change')setPhone(t.dataset.ph,t.value.trim());return}
   if(t.id==='q'){q=t.value;renderHome();return}
   if(t.dataset.s){

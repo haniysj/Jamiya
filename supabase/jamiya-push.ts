@@ -23,6 +23,14 @@ const TIPS = [
   "إذا زاد دخلك فاحتفظ بالزيادة للادخار بدل رفع مستوى الصرف.",
   "قارن الأسعار قبل الشراء، واحذر من التقسيط لما لا تحتاجه.",
 ];
+// الجدول الافتراضي للتنبيهات التلقائية (يمكن تعديله من لوحة التحكم)، الساعة بتوقيت مسقط
+const DEF: Record<string, { on: boolean; day: number; hour: number }> = {
+  pay1: { on: true, day: 23, hour: 9 },
+  pay2: { on: true, day: 27, hour: 9 },
+  turn: { on: true, day: 1, hour: 9 },
+  milestone: { on: true, day: 1, hour: 9 },
+  tip: { on: true, day: 15, hour: 18 },
+};
 const json = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...CORS, "Content-Type": "application/json" } });
 
 async function rpc(fn: string, args: unknown, key: string) {
@@ -44,13 +52,14 @@ Deno.serve(async (req) => {
   try {
     const dump = await rpc("jamiya_push_dump", {}, SVC);
     const conf = dump.conf || {};
-    // التحقق: مؤقّت مجدول (سر) أو أدمن (مستخدم + كلمة مرور)
+    // التحقق: مؤقّت مجدول (سر) أو مستخدم لوحة التحكم (اسم + كلمة مرور + صلاحية)
     if (body.mode === "cron") {
       if (!conf.cron_secret || req.headers.get("x-cron-secret") !== conf.cron_secret) return json({ error: "unauthorized" }, 401);
     } else if (body.mode === "now") {
       const me = await rpc("jamiya_me", { p_u: String(body.u || ""), p_p: String(body.p || "") }, ANON);
       if (!me) return json({ error: "unauthorized" }, 401);
-      if (!Array.isArray(me.perms) || !me.perms.includes("pay")) return json({ error: "forbidden" }, 403);
+      const need = body.kind === "custom" ? "notify" : "pay";
+      if (!Array.isArray(me.perms) || !me.perms.includes(need)) return json({ error: "forbidden" }, 403);
     } else return json({ error: "mode" }, 400);
 
     const data = dump.data;
@@ -61,100 +70,117 @@ Deno.serve(async (req) => {
     const key = `${y}-${String(mo).padStart(2, "0")}`;
     const N = Math.max(1, Math.round((Number(s.years) || 1) * 12));
     const idx = (y - Number(s.startYear)) * 12 + (mo - Number(s.startMonth));
-    if (idx < 0 || idx >= N) return json({ skipped: "outside-range", key });
+    const inRange = idx >= 0 && idx < N;
+    const title0 = s.name || "الجمعية";
+    const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
+    const members: any[] = data.members;
+    const nameOf = new Map(members.map((m: any) => [m.id, m.name]));
+    const subsAll: any[] = dump.subs || [];
+    let vapidSet = false;
 
-    if (body.kind === "turn") {
-      const po = (data.payouts || {})[key];
-      if (!Array.isArray(po) || !po.length) return json({ skipped: "no-payout-data", key });
-      const subsT = (dump.subs || []).filter((x: any) => po.some((p: any) => p.id === x.member_id));
-      const nameOf = new Map(data.members.map((m: any) => [m.id, m.name]));
-      if (body.dry) return json({ dry: true, receivers: po.map((p: any) => ({ name: nameOf.get(p.id), amount: p.amount })), subscribers: subsT.length });
-      webpush.setVapidDetails(conf.vapid_subject, conf.vapid_public, conf.vapid_private);
-      const deadT: string[] = [];
-      let okT = 0, badT = 0;
-      await Promise.all(subsT.map(async (sub: any) => {
-        const p = po.find((q: any) => q.id === sub.member_id);
-        const text = `${nameOf.get(sub.member_id)}، دورك لاستلام الجمعية في ${MONTHS[mo - 1]} ${y}، بإذن الله بنهاية هذا الشهر. المبلغ: ${Math.round(Number(p.amount)).toLocaleString("en-US")} ر.ع.`;
+    // إرسال: قائمة اشتراكات + دالة تبني نص كل اشتراك
+    async function push(subs: any[], mk: (sub: any) => { title?: string; body: string; tag: string }, dry = false) {
+      if (dry) return { dry: true, subscribers: subs.length, sample: subs.length ? mk(subs[0]).body : null };
+      if (!vapidSet) { webpush.setVapidDetails(conf.vapid_subject, conf.vapid_public, conf.vapid_private); vapidSet = true; }
+      const dead: string[] = [];
+      let sent = 0, failed = 0;
+      await Promise.all(subs.map(async (sub: any) => {
+        const p = mk(sub);
         try {
-          await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify({ title: s.name || "الجمعية", body: text, tag: "turn-" + key, url: "/" }), { TTL: 86400 });
-          okT++;
+          await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            JSON.stringify({ title: p.title || title0, body: p.body, tag: p.tag, url: "/" }), { TTL: 86400 });
+          sent++;
         } catch (e: any) {
-          badT++;
-          if (e && (e.statusCode === 404 || e.statusCode === 410)) deadT.push(sub.endpoint);
+          failed++;
+          if (e && (e.statusCode === 404 || e.statusCode === 410)) dead.push(sub.endpoint);
         }
       }));
-      if (deadT.length) await rpc("jamiya_push_prune", { p_endpoints: deadT }, SVC);
-      return json({ kind: "turn", key, sent: okT, failed: badT, pruned: deadT.length });
+      if (dead.length) await rpc("jamiya_push_prune", { p_endpoints: dead }, SVC);
+      return { sent, failed, pruned: dead.length };
     }
 
-    if (body.kind === "milestone" || body.kind === "tip") {
-      const mem = data.members.filter((m: any) => Math.round(Number(m.monthly)) > 0);
-      const pot = mem.reduce((a: number, m: any) => a + Math.round(Number(m.monthly)), 0);
-      const fmt = (n: number) => n.toLocaleString("en-US");
-      let title = s.name || "الجمعية", text = "", tag = "";
-      if (body.kind === "tip") {
-        text = "نصيحة مالية: " + TIPS[idx % TIPS.length];
-        tag = "tip-" + key;
-      } else {
-        const half = Math.floor(N / 2), phases = Math.ceil(N / 6);
-        const lines: string[] = [];
-        if (idx === 0) lines.push(`بدأت الجمعية اليوم. مدتها ${N} شهرًا، والوعاء الشهري ${fmt(pot)} ر.ع. بالتوفيق للجميع.`);
-        else {
-          if (N >= 2 && idx === half) lines.push(`وصلنا منتصف الجمعية! مرّ ${idx} شهرًا وبقي ${N - idx}. تم تجميع ${fmt(pot * idx)} ر.ع من أصل ${fmt(pot * N)} ر.ع.`);
-          if (idx % 6 === 0 && idx > 0 && idx !== half) lines.push(`اكتمل الطور ${idx / 6} من ${phases} (${idx} أشهر). تم تجميع ${fmt(pot * idx)} ر.ع، وبقي ${N - idx} شهرًا.`);
-          if (idx === N - 1) lines.push("هذا هو الشهر الأخير في الجمعية. شكرًا لالتزامكم، وبادروا بدفع القسط الأخير.");
-        }
-        if (!lines.length) return json({ skipped: "no-milestone", key, idx });
-        text = lines.join(" ");
-        tag = "ms-" + key;
+    async function run(kind: string, b: any) {
+      const dry = !!b.dry;
+      if (kind === "custom") {
+        const text = String(b.text || "").trim().slice(0, 300);
+        if (!text) return { error: "empty" };
+        const title = String(b.title || "").trim().slice(0, 60) || title0;
+        let ids: Set<string>;
+        if (b.audience === "members" && Array.isArray(b.members)) ids = new Set(b.members.map(String));
+        else if (b.audience === "unpaid") {
+          const paid = new Set<string>((dump.payments || {})[key] || []);
+          ids = new Set(members.filter((m: any) => Math.round(Number(m.monthly)) > 0 && !paid.has(m.id)).map((m: any) => m.id));
+        } else ids = new Set(members.map((m: any) => m.id));
+        const subs = subsAll.filter((x: any) => ids.has(x.member_id));
+        const r = await push(subs, () => ({ title, body: text, tag: "custom-" + Date.now() }), dry);
+        return { kind, members: new Set(subs.map((x: any) => x.member_id)).size, ...r };
       }
-      const subsAll = dump.subs || [];
-      const ids = new Set(mem.map((m: any) => m.id));
-      const subsN = subsAll.filter((x: any) => ids.has(x.member_id));
-      if (body.dry) return json({ dry: true, title, text, subscribers: subsN.length });
-      webpush.setVapidDetails(conf.vapid_subject, conf.vapid_public, conf.vapid_private);
-      const dead2: string[] = [];
-      let ok = 0, bad = 0;
-      await Promise.all(subsN.map(async (sub: any) => {
-        try {
-          await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify({ title, body: text, tag, url: "/" }), { TTL: 86400 });
-          ok++;
-        } catch (e: any) {
-          bad++;
-          if (e && (e.statusCode === 404 || e.statusCode === 410)) dead2.push(sub.endpoint);
+      if (kind === "turn") {
+        const po = (data.payouts || {})[key];
+        if (!inRange || !Array.isArray(po) || !po.length) return { skipped: "no-payout-data", key };
+        const subs = subsAll.filter((x: any) => po.some((p: any) => p.id === x.member_id));
+        const r = await push(subs, (sub) => {
+          const p = po.find((q: any) => q.id === sub.member_id);
+          return { body: `${nameOf.get(sub.member_id)}، دورك لاستلام الجمعية في ${MONTHS[mo - 1]} ${y}، بإذن الله بنهاية هذا الشهر. المبلغ: ${fmt(Number(p.amount))} ر.ع.`, tag: "turn-" + key };
+        }, dry);
+        return { kind, key, receivers: po.map((p: any) => ({ name: nameOf.get(p.id), amount: p.amount })), ...r };
+      }
+      if (kind === "milestone" || kind === "tip") {
+        if (!inRange) return { skipped: "outside-range", key };
+        const mem = members.filter((m: any) => Math.round(Number(m.monthly)) > 0);
+        const pot = mem.reduce((a: number, m: any) => a + Math.round(Number(m.monthly)), 0);
+        let text = "", tag = "";
+        if (kind === "tip") {
+          text = "نصيحة مالية: " + TIPS[idx % TIPS.length];
+          tag = "tip-" + key;
+        } else {
+          const half = Math.floor(N / 2), phases = Math.ceil(N / 6);
+          const lines: string[] = [];
+          if (idx === 0) lines.push(`بدأت الجمعية اليوم. مدتها ${N} شهرًا، والوعاء الشهري ${fmt(pot)} ر.ع. بالتوفيق للجميع.`);
+          else {
+            if (N >= 2 && idx === half) lines.push(`وصلنا منتصف الجمعية! مرّ ${idx} شهرًا وبقي ${N - idx}. تم تجميع ${fmt(pot * idx)} ر.ع من أصل ${fmt(pot * N)} ر.ع.`);
+            if (idx % 6 === 0 && idx > 0 && idx !== half) lines.push(`اكتمل الطور ${idx / 6} من ${phases} (${idx} أشهر). تم تجميع ${fmt(pot * idx)} ر.ع، وبقي ${N - idx} شهرًا.`);
+            if (idx === N - 1) lines.push("هذا هو الشهر الأخير في الجمعية. شكرًا لالتزامكم، وبادروا بدفع القسط الأخير.");
+          }
+          if (!lines.length) return { skipped: "no-milestone", key, idx };
+          text = lines.join(" ");
+          tag = "ms-" + key;
         }
-      }));
-      if (dead2.length) await rpc("jamiya_push_prune", { p_endpoints: dead2 }, SVC);
-      return json({ kind: body.kind, key, sent: ok, failed: bad, pruned: dead2.length });
+        const ids = new Set(mem.map((m: any) => m.id));
+        const subs = subsAll.filter((x: any) => ids.has(x.member_id));
+        const r = await push(subs, () => ({ body: text, tag }), dry);
+        return { kind, key, text, ...r };
+      }
+      // تذكير الدفع (الافتراضي)
+      if (!inRange) return { skipped: "outside-range", key };
+      const paid = new Set<string>((dump.payments || {})[key] || []);
+      let targets = members.filter((m: any) => Math.round(Number(m.monthly)) > 0 && !paid.has(m.id));
+      if (b.member) targets = targets.filter((m: any) => m.id === String(b.member));
+      const byId = new Map(targets.map((m: any) => [m.id, m]));
+      const subs = subsAll.filter((x: any) => byId.has(x.member_id));
+      const r = await push(subs, (sub) => {
+        const m: any = byId.get(sub.member_id);
+        return { body: `${m.name}، موعد دفع ${MONTHS[mo - 1]} ${y}: ${Math.round(Number(m.monthly))} ر.ع. بادر بالدفع.`, tag: "pay-" + key };
+      }, dry);
+      return { key, unpaid: targets.length, subscribed: new Set(subs.map((x: any) => x.member_id)).size, ...r };
     }
 
-    const paid = new Set<string>((dump.payments || {})[key] || []);
-    let targets = data.members.filter((m: any) => Math.round(Number(m.monthly)) > 0 && !paid.has(m.id));
-    if (body.member) targets = targets.filter((m: any) => m.id === String(body.member));
-    const byId = new Map(targets.map((m: any) => [m.id, m]));
-    const subs = (dump.subs || []).filter((x: any) => byId.has(x.member_id));
-
-    webpush.setVapidDetails(conf.vapid_subject, conf.vapid_public, conf.vapid_private);
-    const dead: string[] = [];
-    let sent = 0, failed = 0;
-    await Promise.all(subs.map(async (sub: any) => {
-      const m: any = byId.get(sub.member_id);
-      const payload = JSON.stringify({
-        title: s.name || "الجمعية",
-        body: `${m.name}، موعد دفع ${MONTHS[mo - 1]} ${y}: ${Math.round(Number(m.monthly))} ر.ع. بادر بالدفع.`,
-        tag: "pay-" + key,
-        url: "/",
-      });
-      try {
-        await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload, { TTL: 86400 });
-        sent++;
-      } catch (e: any) {
-        failed++;
-        if (e && (e.statusCode === 404 || e.statusCode === 410)) dead.push(sub.endpoint);
+    // تشغيل تلقائي كل ساعة: ينفّذ ما حان موعده حسب الجدول المحفوظ
+    if (body.mode === "cron" && body.kind === "auto") {
+      let saved: any = {};
+      try { saved = conf.notif ? JSON.parse(conf.notif) : {}; } catch (_) {}
+      const day = m4.getUTCDate(), hour = m4.getUTCHours();
+      const ran: Record<string, unknown> = {};
+      for (const name of Object.keys(DEF)) {
+        const c = { ...DEF[name], ...(saved[name] || {}) };
+        if (!c.on || Number(c.day) !== day || Number(c.hour) !== hour) continue;
+        ran[name] = await run(name === "pay1" || name === "pay2" ? "pay" : name, {});
       }
-    }));
-    if (dead.length) await rpc("jamiya_push_prune", { p_endpoints: dead }, SVC);
-    return json({ key, unpaid: targets.length, subscribed: new Set(subs.map((x: any) => x.member_id)).size, sent, failed, pruned: dead.length });
+      return json({ auto: true, day, hour, ran });
+    }
+
+    const kind = ["custom", "turn", "milestone", "tip"].includes(body.kind) ? body.kind : "pay";
+    return json(await run(kind, body));
   } catch (e) {
     return json({ error: String((e as Error).message || e) }, 500);
   }

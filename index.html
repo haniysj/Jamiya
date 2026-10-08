@@ -1,4 +1,4 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#5B3A29"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235B3A29'/%3E%3Cpath d='M16 18c0 22 10 30 16 30s16-8 16-30' fill='none' stroke='%23C89B3C' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E"><title>الجمعية التعاونية</title>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#5B3A29"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="الجمعية"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235B3A29'/%3E%3Cpath d='M16 18c0 22 10 30 16 30s16-8 16-30' fill='none' stroke='%23C89B3C' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E"><title>الجمعية التعاونية</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -9,7 +9,7 @@
   --rust:#9C4A34;--rust-soft:#F5E1DA;--gold:#C89B3C;--gold-soft:#F6E9C6;--gold-ink:#7A5A12;
   --b0:#FBE3DE;--b1:#E9E4F0;--b2:#DCE6F5;--b3:#FBF0D9;--b4:#DEEFE0;
   --p0:#E7A596;--p1:#B4A4D4;--p2:#86A9DA;--p3:#E4BD62;--p4:#7DB88A;
-  --chip:#FFFFFF;--hit:#FFE9A8;--shadow:0 1px 2px rgba(91,58,41,.08),0 8px 22px rgba(91,58,41,.07);
+  --ok:#2F7D4F;--ok-soft:#DDEFE3;--chip:#FFFFFF;--hit:#FFE9A8;--shadow:0 1px 2px rgba(91,58,41,.08),0 8px 22px rgba(91,58,41,.07);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#1A1411;--surface:#241B16;--surface2:#30241D;--ink:#F0E8DC;--muted:#B5A596;--line:#3F3128;
@@ -17,14 +17,14 @@
   --rust:#E08A70;--rust-soft:#3A2420;--gold:#D9AF55;--gold-soft:#3A3320;--gold-ink:#E8C97A;
   --b0:#3A2622;--b1:#2D2939;--b2:#22303F;--b3:#3A3322;--b4:#223A2A;
   --p0:#B8705F;--p1:#8472AE;--p2:#5A80B8;--p3:#B4903C;--p4:#4E8E5E;
-  --chip:#2C211B;--hit:#6B5714;--shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}}
+  --ok:#6CC48C;--ok-soft:#1F3A2A;--chip:#2C211B;--hit:#6B5714;--shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1A1411;--surface:#241B16;--surface2:#30241D;--ink:#F0E8DC;--muted:#B5A596;--line:#3F3128;
   --primary:#8A5A3F;--on-primary:#FFFFFF;--primary-soft:#3A2B22;--primary-ink:#E3C3A6;
   --rust:#E08A70;--rust-soft:#3A2420;--gold:#D9AF55;--gold-soft:#3A3320;--gold-ink:#E8C97A;
   --b0:#3A2622;--b1:#2D2939;--b2:#22303F;--b3:#3A3322;--b4:#223A2A;
   --p0:#B8705F;--p1:#8472AE;--p2:#5A80B8;--p3:#B4903C;--p4:#4E8E5E;
-  --chip:#2C211B;--hit:#6B5714;--shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}
+  --ok:#6CC48C;--ok-soft:#1F3A2A;--chip:#2C211B;--hit:#6B5714;--shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cairo',system-ui,sans-serif;font-size:14px;line-height:1.55}
 .wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:14px 28px}
@@ -94,6 +94,32 @@ button{font-family:inherit;cursor:pointer}
 .btn:active,.arrow:active,.ib:active{transform:scale(.96)}
 .btn:hover:not(:disabled){filter:brightness(1.07)}
 [hidden]{display:none!important}
+.pbar{height:9px;border-radius:99px;background:var(--surface2);overflow:hidden;margin:8px 0 10px}
+.pbar>i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .5s}
+.pchips{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--chip);border-radius:999px;padding:3px 11px;font-size:13px;font-weight:600}
+.pchip .ic{width:1.05em;height:1.05em}
+.pchip.ok{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.pchip.wait{color:var(--muted)}
+.pchip.wait .ic{color:var(--gold)}
+.pill.okp{background:var(--ok-soft);color:var(--ok);display:inline-flex;align-items:center;gap:5px}
+.pill .ic{width:1.05em;height:1.05em}
+.ptop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ptop h2{margin:0;font-size:16px;font-weight:800;color:var(--primary-ink);display:flex;align-items:center;gap:7px}
+.ptop .sp{flex:1}
+.pnote{margin-top:8px;font-size:12.5px;color:var(--muted)}
+.ppanel{margin-top:10px;padding:10px;border:1px dashed var(--line);border-radius:12px;background:var(--bg);display:flex;flex-direction:column;gap:8px}
+.ppanel .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ppanel select{flex:1;min-width:150px}
+.pnav{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pnav b{flex:1;text-align:center;font-size:15px;color:var(--primary-ink)}
+.prow{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.prow:first-of-type{border-top:0}
+.prow .pn2{flex:1;min-width:130px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.prow .bell{color:var(--line);display:inline-grid}
+.prow .bell.on{color:var(--gold)}
+.prow.ok .pn2{opacity:.75}
+.pbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .search{position:relative}
 .search input{width:100%;padding:11px 40px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:15px}
 .search .ic{position:absolute;inset-inline-start:13px;top:50%;transform:translateY(-50%);color:var(--muted);width:1.3em;height:1.3em}
@@ -223,6 +249,9 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"/></symbol>
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></symbol>
 </defs></svg>
 <div id="app" dir="rtl" lang="ar"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" dir="rtl"></div>
@@ -355,6 +384,8 @@ let draft=null,draftErr='',openPicker=null,confirmDel=null,loginErr='',draftPick
 let tab='members',theme='light',scrollNow=true,toastT=null;
 let toolsOpen=false,toolsConfirm='',toolsMsg='',backupText='';
 let saveTimer=null,saveStatus='saved';
+let paid={},pushSubs={},payIdx=null,payAllConf=false,remBusy=false,pushOpen=false,pushMsg='',pushMine=null;
+try{pushMine=JSON.parse(localStorage.getItem('jamiya-push')||'null')}catch(e){}
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -376,7 +407,7 @@ function applyTheme(t){theme=t;document.documentElement.setAttribute('data-theme
 const STATUS_TXT={saved:'تم الحفظ تلقائيًا',dirty:'تعديل غير محفوظ',saving:'جارٍ الحفظ…',error:'تعذّر الحفظ'};
 function setStatus(s){saveStatus=s;const el=$('#saveSt');if(el){el.className='save '+s;el.innerHTML='<i></i>'+STATUS_TXT[s]}}
 function touch(){setStatus('dirty');clearTimeout(saveTimer);saveTimer=setTimeout(doSave,700)}
-async function doSave(){setStatus('saving');const ok=await Storage.save(state);setStatus(ok?'saved':'error');if(!ok)toast(loadFailed?'لا يمكن الحفظ: تعذّر تحميل البيانات من قاعدة البيانات':'تعذّر الحفظ، تحقق من الاتصال')}
+async function doSave(){setStatus('saving');if(!REMOTE)state.pay=paid;const ok=await Storage.save(state);setStatus(ok?'saved':'error');if(!ok)toast(loadFailed?'لا يمكن الحفظ: تعذّر تحميل البيانات من قاعدة البيانات':'تعذّر الحفظ، تحقق من الاتصال')}
 window.addEventListener('pagehide',()=>{if(saveStatus==='dirty')Storage.save(state)});
 
 /* ---------- الواجهة العامة ---------- */
@@ -396,12 +427,12 @@ function render(){
   let body='';
   if(view==='home')body=`<div id="stats"></div><div id="ucard"></div>
     <section class="sec"><div class="search"><input id="q" type="text" placeholder="ابحث باسم العضو…" value="${esc(q)}" aria-label="بحث بالاسم" autocomplete="off">${ic('search')}<button class="qx" id="qx" data-act="clearq" aria-label="مسح البحث" ${q?'':'hidden'}>${ic('x')}</button></div></section>
-    <section class="sec who" id="whosec"></section><section class="sec" id="tlsec"></section><section class="sec" id="monsec"></section><section class="sec" id="totsec"></section>`;
+    <section class="sec who" id="whosec"></section><section class="sec" id="tlsec"></section><section class="sec card" id="paysec"></section><section class="sec" id="monsec"></section><section class="sec" id="totsec"></section>`;
   else if(view==='login')body=loginHTML();
   else body=adminHTML();
   $('#app').innerHTML=`<div class="wrap">${headerHTML()}${body}<div class="foot">إعداد: هاني الغطريفي</div></div>`;
   if(view==='home')renderHome();
-  if(view==='admin'){renderSettings();renderSummary();renderMembers();renderUsers();renderTools();setStatus(saveStatus)}
+  if(view==='admin'){renderSettings();renderSummary();renderMembers();renderPay();renderUsers();renderTools();setStatus(saveStatus)}
 }
 
 /* ---------- الصفحة الرئيسية ---------- */
@@ -453,7 +484,7 @@ function renderHome(){
   if(!state.members.length){
     $('#ucard').innerHTML='';
     $('#tlsec').innerHTML=`<div class="card empty-box">لا يوجد أعضاء بعد.<br>${user?`<button class="btn pri" data-act="go-admin">${ic('plus')}أضف الأعضاء من لوحة التحكم</button>`:`<button class="btn pri" data-act="go-login">${ic('lock')}دخول الإدارة لإضافة الأعضاء</button>`}</div>`;
-    $('#monsec').innerHTML='';$('#totsec').innerHTML='';return;
+    $('#monsec').innerHTML='';$('#totsec').innerHTML='';$('#paysec').innerHTML='';return;
   }
   const tcI=clampIdx(ti);
   $('#ucard').innerHTML=`<section class="sec card ucard"><div class="uh"><h2>${ic('cal')}مسار الجمعية</h2><span class="sp"></span><span class="pill gold">${ti<0?'تبدأ قريبًا · ':ti>=N?'انتهت · ':''}${MONTHS[monthPos(s,tcI).m]} ${monthPos(s,tcI).y} · الشهر ${tcI+1} من ${N}</span>${ti>=0&&ti<N-1?`<span class="pill">متبقٍ ${N-1-ti} شهرًا</span>`:''}</div>${ucurve(N,cursor)}</section>`;
@@ -466,6 +497,7 @@ function renderHome(){
    <div class="tl"><button class="arrow pv" data-act="prev" aria-label="الشهر السابق" ${cursor<=0?'disabled':''}>${ic('chev')}</button>
    <div class="tvp" id="tvp"><div class="tframe"><div class="slot"><span class="pill">السابق</span></div><div class="slot cur"><span class="pill${cursor===t?' gold':''}">${cursor===t?'الشهر الحالي':'الشهر المحدد'}</span></div><div class="slot"><span class="pill">القادم</span></div></div><div class="ttrack" id="ttrack">${[-2,-1,0,1,2].map(d=>cellHTML(sched,cursor+d)).join('')}</div></div>
    <button class="arrow nx" data-act="next" aria-label="الشهر التالي" ${cursor>=N-1?'disabled':''}>${ic('chev')}</button></div>`;
+  $('#paysec').innerHTML=paySecHTML();
   // الجدول الشهري
   const rows=sched.months.filter(m=>!q||m.payments.some(p=>hitName(p.name)));
   const showM=openM||q;
@@ -504,12 +536,13 @@ async function doLogin(){
     if(!ok){fail('اسم المستخدم أو كلمة المرور غير صحيحة');return}
     creds={u,p};user=u;loginErr='';
     try{remoteUsers=await rpc('jamiya_users',{p_u:u,p_p:p})||[]}catch(x){remoteUsers=[u]}
+    try{pushSubs=await rpc('jamiya_push_subs',{p_u:u,p_p:p})||{}}catch(x){}
     view='admin';render();
   }catch(x){fail('تعذّر الاتصال بقاعدة البيانات، حاول مرة أخرى.')}
 }
 
 /* ---------- لوحة التحكم ---------- */
-const TABS=[['members','الأعضاء','users','memBox'],['settings','الإعدادات','gear','setBox'],['users','المستخدمون','lock','usrBox'],['data','البيانات','db','toolBox']];
+const TABS=[['members','الأعضاء','users','memBox'],['pay','التحصيل','check','payBox'],['settings','الإعدادات','gear','setBox'],['users','المستخدمون','lock','usrBox'],['data','البيانات','db','toolBox']];
 function adminHTML(){
   return`<div class="abar"><h2>لوحة التحكم</h2><span class="save saved" id="saveSt"></span></div><div id="sumBox"></div>
   <div class="tabs" role="tablist">${TABS.map(x=>`<button class="tab" role="tab" data-act="tab" data-t="${x[0]}" aria-selected="${tab===x[0]}">${ic(x[2])}${x[1]}</button>`).join('')}</div>
@@ -619,6 +652,112 @@ function renderTools(){
    <div class="err" style="color:var(--primary-ink)">${esc(toolsMsg)}</div>`;
 }
 
+/* ---------- التحصيل والتنبيهات ---------- */
+const isPaid=(k,id)=>(paid[k]||[]).includes(id);
+const payMonth=()=>clampIdx(payIdx===null?todayIdx():payIdx);
+async function loadPaid(){if(!REMOTE)return;try{const x=await rpc('jamiya_payments');if(x&&typeof x==='object')paid=x}catch(e){}}
+async function refreshSubs(){
+  if(REMOTE&&creds){await loadPaid();try{pushSubs=await rpc('jamiya_push_subs',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
+  renderPay();
+}
+const pushOK='serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isStandalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+const pushOn=()=>!!(pushMine&&pushOK&&Notification.permission==='granted');
+function paySecHTML(){
+  const s=state.settings,i=clampIdx(cursor),k=monthKey(s,i),mp=monthPos(s,i),ti=todayIdx(),future=i>ti;
+  const list=state.members.filter(m=>toInt(m.monthly)>0),done=list.filter(m=>isPaid(k,m.id));
+  const sum=done.reduce((a,m)=>a+toInt(m.monthly),0),tot=list.reduce((a,m)=>a+toInt(m.monthly),0);
+  const pct=tot?Math.round(sum*100/tot):0;
+  const shown=list.filter(m=>hitName(m.name));
+  const chips=shown.map(m=>{const ok=isPaid(k,m.id);return`<span class="pchip ${ok?'ok':future?'':'wait'}">${ok?ic('check'):future?'':ic('clock')}<span>${esc(m.name)}</span></span>`}).join('')||'<span class="none">لا توجد نتائج مطابقة.</span>';
+  const mine=pushMine&&find(pushMine.m);
+  let ctl='';
+  if(REMOTE)ctl=pushOn()&&mine?`<span class="pill gold">${ic('bell')}التنبيهات مفعّلة: ${esc(mine.name)}</span><button class="btn sm" data-act="pushoff">إيقاف</button>`:`<button class="btn sm" data-act="pushtog">${ic('bell')}فعّل التنبيهات</button>`;
+  let panel='';
+  if(REMOTE&&pushOpen&&!(pushOn()&&mine)){
+    if(isIOS&&!isStandalone)panel=`<div class="ppanel"><div>على الآيفون: اضغط زر المشاركة في سفاري، ثم «إضافة إلى الشاشة الرئيسية». افتح الجمعية من أيقونتها على الشاشة الرئيسية، ثم اضغط «فعّل التنبيهات» مرة أخرى.</div></div>`;
+    else if(!pushOK)panel=`<div class="ppanel"><div>هذا المتصفح لا يدعم التنبيهات. جرّب Chrome أو Safari الحديث.</div></div>`;
+    else panel=`<div class="ppanel"><div class="lbl">اختر اسمك ليصلك التذكير بموعد الدفع:</div><div class="row"><select id="pushm"><option value="">— اختر اسمك —</option>${state.members.filter(m=>toInt(m.monthly)>0).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select><button class="btn pri sm" data-act="pushon">${ic('bell')}تفعيل</button></div><div class="err">${esc(pushMsg)}</div></div>`;
+  }
+  return`<div class="ptop"><h2>${ic('check')}التحصيل · ${MONTHS[mp.m]} ${mp.y}</h2><span class="sp"></span>${ctl}</div>
+  ${panel}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px"><span class="pill okp">${ic('check')}دفع ${done.length} من ${list.length}</span><span class="stat" style="padding:1px 10px"><span>المحصّل</span>${money(sum)}<span>من</span>${money(tot)}</span></div>
+  <div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
+  ${future&&!done.length?'<div class="pnote">لم يحن موعد دفع هذا الشهر بعد.</div>':''}
+  <div class="pchips">${chips}</div>`;
+}
+function renderPay(){
+  const e=$('#payBox');if(!e)return;
+  const s=state.settings,i=payMonth(),k=monthKey(s,i),mp=monthPos(s,i),isNow=i===todayIdx();
+  const list=state.members.filter(m=>toInt(m.monthly)>0),done=list.filter(m=>isPaid(k,m.id));
+  const sum=done.reduce((a,m)=>a+toInt(m.monthly),0),tot=list.reduce((a,m)=>a+toInt(m.monthly),0);
+  const subsN=list.filter(m=>pushSubs[m.id]>0).length,N=monthsCount(s);
+  e.innerHTML=`<h3>${ic('check')}التحصيل</h3>
+  <div class="pnav"><button class="ib" data-act="paynav" data-d="-1" aria-label="الشهر السابق" ${i<=0?'disabled':''}>${ic('chev')}</button><b>${MONTHS[mp.m]} ${mp.y}${isNow?' · الحالي':''}</b><button class="ib" data-act="paynav" data-d="1" aria-label="الشهر التالي" ${i>=N-1?'disabled':''} style="transform:scaleX(-1)">${ic('chev')}</button></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill okp">${ic('check')}دفع ${done.length} من ${list.length}</span><span class="stat" style="padding:1px 10px"><span>المحصّل</span>${money(sum)}<span>من</span>${money(tot)}</span></div>
+  <div class="pbar"><i style="width:${tot?Math.round(sum*100/tot):0}%"></i></div>
+  ${list.length?list.map(m=>{const ok=isPaid(k,m.id),sb=pushSubs[m.id]||0;
+    return`<div class="prow${ok?' ok':''}"><div class="pn2"><b>${esc(m.name)}</b>${money(toInt(m.monthly))}</div><span class="bell${sb?' on':''}" title="${sb?'فعّل التنبيهات':'لم يفعّل التنبيهات'}">${ic('bell')}</span>${ok?`<span class="pill okp">${ic('check')}دفع</span><button class="ib" data-act="payundo" data-id="${m.id}" aria-label="تراجع عن التأكيد">${ic('x')}</button>`:`<button class="btn sm pri" data-act="paytog" data-id="${m.id}">${ic('check')}تم الدفع</button>${isNow&&sb&&REMOTE?`<button class="btn sm" data-act="remind" data-id="${m.id}" ${remBusy?'disabled':''}>${ic('bell')}ذكّر</button>`:''}`}</div>`}).join(''):'<p class="hint">أضف الأعضاء أولًا.</p>'}
+  <div class="pbtns"><button class="btn sm ${payAllConf?'dangerfill':''}" data-act="payall" ${done.length===list.length?'disabled':''}>${ic('check')}${payAllConf?'تأكيد: الجميع دفعوا':'تأكيد دفع الجميع'}</button>
+  ${REMOTE?`<button class="btn sm" data-act="remindall" ${!isNow||remBusy?'disabled':''}>${ic('bell')}ذكّر كل المتأخرين</button>`:''}</div>
+  <p class="hint">${REMOTE?`التذكير التلقائي يوم 23 ويوم 27 الساعة 9 صباحًا بتوقيت مسقط، للمتأخرين فقط. فعّل التنبيهات: ${subsN} من ${list.length}. زر «ذكّر» متاح للشهر الحالي ولمن فعّل التنبيهات.`:'التنبيهات تعمل في النسخة المنشورة فقط.'}</p>`;
+}
+async function setPaid(id,v){
+  const k=monthKey(state.settings,payMonth()),prev=paid[k]||[];
+  paid={...paid,[k]:prev.filter(x=>x!==id).concat(v?[id]:[])};renderPay();
+  if(!REMOTE){touch();return}
+  try{await rpc('jamiya_set_paid',{p_u:creds.u,p_p:creds.p,p_month:k,p_member:id,p_paid:v})}
+  catch(e){paid={...paid,[k]:prev};renderPay();toast('تعذّر حفظ الدفع')}
+}
+async function payAllDo(){
+  const k=monthKey(state.settings,payMonth()),prev=paid[k]||[];
+  const ids=state.members.filter(m=>toInt(m.monthly)>0&&!prev.includes(m.id)).map(m=>m.id);
+  if(!ids.length)return;
+  paid={...paid,[k]:prev.concat(ids)};renderPay();
+  if(!REMOTE){touch();return}
+  try{await rpc('jamiya_set_paid_many',{p_u:creds.u,p_p:creds.p,p_month:k,p_members:ids});toast('تم تأكيد دفع الجميع')}
+  catch(e){paid={...paid,[k]:prev};renderPay();toast('تعذّر حفظ الدفع')}
+}
+async function remind(memberId){
+  if(!REMOTE||!creds||remBusy)return;
+  remBusy=true;renderPay();
+  try{
+    const r=await fetch(CFG.supabaseUrl+'/functions/v1/jamiya-push',{method:'POST',headers:{'Content-Type':'application/json','apikey':CFG.supabaseKey},body:JSON.stringify({mode:'now',u:creds.u,p:creds.p,member:memberId||undefined})});
+    const j=await r.json();if(!r.ok)throw new Error('x');
+    toast(j.sent?`تم إرسال ${j.sent} تنبيه`:j.skipped?'الشهر الحالي خارج مدة الجمعية':'لا أحد من المتأخرين فعّل التنبيهات');
+  }catch(e){toast('تعذّر إرسال التنبيه')}
+  remBusy=false;renderPay();
+}
+const b64u=t=>{const p='='.repeat((4-t.length%4)%4),r=atob((t+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(r,c=>c.charCodeAt(0))};
+async function pushEnable(){
+  const sel=$('#pushm'),id=sel?sel.value:'';
+  const say=m=>{pushMsg=m;const e=document.querySelector('.ppanel .err');if(e)e.textContent=m};
+  if(!id)return say('اختر اسمك أولًا.');
+  try{
+    say('جارٍ التفعيل…');
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted')return say('لم يتم السماح بالتنبيهات. فعّلها من إعدادات المتصفح للموقع.');
+    const reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready;
+    const key=await rpc('jamiya_vapid_public');
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(key)});
+    const j=sub.toJSON();
+    await rpc('jamiya_push_subscribe',{p_member:id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth});
+    pushMine={m:id};try{localStorage.setItem('jamiya-push',JSON.stringify(pushMine))}catch(e){}
+    pushOpen=false;pushMsg='';renderHome();toast('تم تفعيل التنبيهات');
+  }catch(e){say('تعذّر التفعيل. تأكد من الاتصال وحاول مرة أخرى.')}
+}
+async function pushDisable(){
+  try{
+    const reg=await navigator.serviceWorker.getRegistration();
+    const sub=reg&&await reg.pushManager.getSubscription();
+    if(sub){try{await rpc('jamiya_push_unsubscribe',{p_endpoint:sub.endpoint})}catch(e){}await sub.unsubscribe()}
+  }catch(e){}
+  pushMine=null;try{localStorage.removeItem('jamiya-push')}catch(e){}
+  renderHome();toast('تم إيقاف التنبيهات');
+}
+
 /* ---------- الأحداث ---------- */
 function find(id){return state.members.find(m=>m.id===id)}
 function addMember(){
@@ -634,6 +773,7 @@ function click(e){
   const act=b?b.dataset.act:'';
   if(confirmDel&&act!=='del'){confirmDel=null;if(view==='admin')renderMembers()}
   if(toolsConfirm&&!['demo','clear','restore'].includes(act)){toolsConfirm='';if(view==='admin')renderTools()}
+  if(payAllConf&&act!=='payall'){payAllConf=false;if(view==='admin')renderPay()}
   if(!b)return;
   const id=b.dataset.id;
   switch(act){
@@ -648,7 +788,7 @@ function click(e){
     case'tg-m':openM=!openM;if(openM)scrollNow=true;renderHome();break;
     case'tg-t':openT=!openT;renderHome();break;
     case'theme':applyTheme(theme==='dark'?'light':'dark');render();break;
-    case'tab':tab=b.dataset.t;document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x.dataset.t===tab));TABS.forEach(x=>{const e=$('#'+x[3]);if(e)e.hidden=x[0]!==tab});break;
+    case'tab':tab=b.dataset.t;if(tab==='pay')refreshSubs();document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x.dataset.t===tab));TABS.forEach(x=>{const e=$('#'+x[3]);if(e)e.hidden=x[0]!==tab});break;
     case'goto':cursor=+b.dataset.i;renderHome();try{$('#tlsec').scrollIntoView({behavior:'smooth',block:'nearest'})}catch(x){}break;
     case'who':q=b.dataset.n;$('#q').value=q;renderHome();try{$('#q').scrollIntoView({behavior:'smooth',block:'center'})}catch(x){}break;
     case'clearq':q='';$('#q').value='';renderHome();$('#q').focus();break;
@@ -673,6 +813,15 @@ function click(e){
     case'uadd':userAction('add');break;
     case'udel':userAction('del',b.dataset.u);break;
     case'cpw':userAction('pw');break;
+    case'paynav':payIdx=clampIdx(payMonth()+(+b.dataset.d));payAllConf=false;renderPay();break;
+    case'paytog':setPaid(id,true);break;
+    case'payundo':setPaid(id,false);break;
+    case'payall':if(payAllConf){payAllConf=false;payAllDo()}else{payAllConf=true;renderPay()}break;
+    case'remind':remind(id);break;
+    case'remindall':remind('');break;
+    case'pushtog':pushOpen=!pushOpen;pushMsg='';renderHome();break;
+    case'pushon':pushEnable();break;
+    case'pushoff':pushDisable();break;
     case'showbk':toolsOpen=!toolsOpen;backupText=JSON.stringify({settings:state.settings,members:state.members},null,1);toolsMsg='';renderTools();break;
     case'cpbk':{const t=$('#bk');t.select();try{navigator.clipboard.writeText(t.value).then(()=>{toolsMsg='تم النسخ.';renderTools()},()=>{toolsMsg='حدد النص ثم انسخه يدويًا.';renderTools()})}catch(x){toolsMsg='حدد النص ثم انسخه يدويًا.';renderTools()}break}
     case'demo':
@@ -684,7 +833,7 @@ function click(e){
     case'restore':
       if(toolsConfirm==='restore'){
         try{const d=JSON.parse($('#bk').value);const n=normalize({settings:d.settings,members:d.members,users:state.users});
-          if(!n)throw 0;n.demo=false;state=n;draft=newDraft();toolsConfirm='';toolsMsg='تمت الاستعادة.';touch();renderSettings();renderSummary();renderMembers();renderTools();updateSetInfo()}
+          if(!n)throw 0;n.demo=false;n.pay=paid;state=n;draft=newDraft();toolsConfirm='';toolsMsg='تمت الاستعادة.';touch();renderSettings();renderSummary();renderMembers();renderTools();updateSetInfo()}
         catch(x){toolsConfirm='';toolsMsg='النص غير صالح، لم يتم تغيير أي شيء.';renderTools()}
       }else{toolsConfirm='restore';backupText=$('#bk')?$('#bk').value:'';renderTools()}
       break;
@@ -775,11 +924,12 @@ app.addEventListener('pointercancel',endDrag);
   let th='light';try{th=localStorage.getItem('jamiya-theme')||'light'}catch(e){}
   applyTheme(th==='dark'?'dark':'light');
   state=normalize(await Storage.load())||defaultData();
+  if(REMOTE)await loadPaid();else paid=state.pay||{};
   draft=newDraft();cursor=clampIdx(todayIdx());
   render();
   if(REMOTE)document.addEventListener('visibilitychange',async()=>{
     if(document.visibilityState!=='visible'||user||view==='login')return;
-    const d=normalize(await Storage.load());if(d){state=d;if(view==='home')renderHome()}
+    await loadPaid();const d=normalize(await Storage.load());if(d){state=d;if(view==='home')renderHome()}else if(view==='home')renderHome()
   });
 })();
 </script>

@@ -1,4 +1,4 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#5B3A29"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="الجمعية"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235B3A29'/%3E%3Cpath d='M16 18c0 22 10 30 16 30s16-8 16-30' fill='none' stroke='%23C89B3C' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E"><title>الجمعية التعاونية</title>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#5B3A29"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="الجمعية"><meta name="format-detection" content="telephone=no"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="الجمعية"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%235B3A29'/%3E%3Cpath d='M16 18c0 22 10 30 16 30s16-8 16-30' fill='none' stroke='%23C89B3C' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E"><title>الجمعية التعاونية</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -88,6 +88,17 @@ button{font-family:inherit;cursor:pointer}
 .ncnt{font-size:11.5px;color:var(--muted);text-align:left}
 .nsel{display:flex;flex-wrap:wrap;gap:6px}.nsel label{display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;background:var(--surface)}
 .nres{font-size:13px;font-weight:700;color:var(--primary-ink)}
+
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+.wrap{padding-inline:max(16px,env(safe-area-inset-left),env(safe-area-inset-right));padding-top:max(14px,env(safe-area-inset-top));padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+@supports(-webkit-touch-callout:none){input,select,textarea,.in{font-size:16px!important}}
+@media(pointer:coarse){button,.btn,select,.in{touch-action:manipulation}.ib{min-width:38px;min-height:38px}}
+@media(max-width:400px){.wrap{padding-inline:max(12px,env(safe-area-inset-left),env(safe-area-inset-right))}}
+@media(max-width:340px){.stats{gap:4px}.stats .stat:not(.inl){padding:5px 4px}.stats .stat:not(.inl) span{font-size:9px}}
+.ios{display:flex;flex-direction:column;gap:10px;text-align:right}
+.ios ol{margin:0;padding:0 18px 0 0;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.ios li svg{width:18px;height:18px;vertical-align:-4px;margin-inline:2px}
 .stat.inl{flex:none;flex-direction:row;align-items:center;gap:6px;padding:2px 10px;font-size:13px}.stat.inl span{font-size:13px}
 .ord{display:flex;align-items:center;gap:6px;margin-inline-start:auto;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
 .mtg{width:34px;height:34px}.mtg svg{transition:transform .2s}.mtg[aria-expanded="true"] svg{transform:rotate(180deg)}
@@ -278,7 +289,7 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
 <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></symbol>
 <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
-<symbol id="i-aup" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol><symbol id="i-adn" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol><symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.3 2.7 6 6 6l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-aup" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol><symbol id="i-adn" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol><symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.3 2.7 6 6 6l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/></symbol><symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></symbol><symbol id="i-plussq" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
 <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -473,9 +484,17 @@ function headerHTML(){
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
   <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p></div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
 }
-let onbM=null;
+const iosSteps=()=>`<div class="ios"><div><b>تنبيهات الآيفون تعمل فقط من أيقونة التطبيق على الشاشة الرئيسية</b> (شرط من أبل، ويلزم iOS 16.4 أو أحدث). تحتاج هذه الخطوات مرة واحدة:</div>
+  <ol><li>افتح الموقع في <b>Safari</b>، ثم اضغط زر المشاركة ${ic('share')} أسفل الشاشة.</li>
+  <li>اختر <b>«إضافة إلى الشاشة الرئيسية»</b> ${ic('plussq')} ثم «إضافة».</li>
+  <li>افتح <b>الجمعية</b> من أيقونتها على الشاشة الرئيسية (وليس من Safari).</li>
+  <li>أدخل رقمك من جديد، ثم اضغط «تفعيل التنبيهات» واسمح بها.</li></ol></div>`;
+let onbM=null,onbIos=false;
 function onbHTML(){
   const m=onbM&&find(onbM),mk='<div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>';
+  if(m&&onbIos)return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">${mk}
+  <h2>أهلًا ${esc(m.name)} 👋</h2>${iosSteps()}
+  <button class="btn pri" data-act="onb-skip" style="width:100%;justify-content:center">فهمت</button></div></div>`;
   if(m)return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">${mk}
   <h2>أهلًا ${esc(m.name)} 👋</h2>
   <p>يسعدنا انضمامك إلى ${esc(state.settings.name)}. فعّل التنبيهات ليصلك كل جديد: موعد الدفع، ودورك في الاستلام، وأخبار الجمعية.</p>
@@ -502,7 +521,8 @@ async function onbGo(){
 }
 async function onbPush(){
   const say=m=>{const e=$('#onbe');if(e)e.textContent=m};
-  if(!pushOK){onbClose();toast('لتفعيل التنبيهات على الآيفون أضف الموقع للشاشة الرئيسية ثم افتحه منها');return}
+  if(isIOS&&!isStandalone){onbIos=true;const o=$('.onb');if(o)o.outerHTML=onbHTML();return}
+  if(!pushOK){onbClose();toast('هذا المتصفح لا يدعم التنبيهات');return}
   const ok=await pushEnable(onbM,say);
   if(ok)onbClose();
 }
@@ -856,7 +876,7 @@ function pushPanelHTML(){
   const mine=pushMine&&find(pushMine.m),cl=`<button class="btn sm" data-act="pushtog">إغلاق</button>`;
   let inner;
   if(pushOn()&&mine)inner=`<div class="row"><span class="pill gold">${ic('bell')}التنبيهات مفعّلة لـ ${esc(mine.name)}</span><button class="btn sm danger" data-act="pushoff">إيقاف التنبيهات</button>${cl}</div>`;
-  else if(isIOS&&!isStandalone)inner=`<div>على الآيفون: اضغط زر المشاركة في سفاري، ثم «إضافة إلى الشاشة الرئيسية». افتح الجمعية من أيقونتها على الشاشة الرئيسية، ثم اضغط «التنبيهات» مرة أخرى.</div><div class="row">${cl}</div>`;
+  else if(isIOS&&!isStandalone)inner=`${iosSteps()}<div class="row">${cl}</div>`;
   else if(!pushOK)inner=`<div>هذا المتصفح لا يدعم التنبيهات. جرّب Chrome أو Safari الحديث.</div><div class="row">${cl}</div>`;
   else inner=`<div class="lbl">اختر اسمك ليصلك التذكير بموعد الدفع:</div><div class="row"><select id="pushm"><option value="">— اختر اسمك —</option>${state.members.filter(m=>toInt(m.monthly)>0).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select><button class="btn pri sm" data-act="pushon">${ic('bell')}تفعيل</button>${cl}</div><div class="err">${esc(pushMsg)}</div>`;
   return`<section class="card ppanel" style="margin-top:12px">${inner}</section>`;

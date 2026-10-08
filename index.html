@@ -55,8 +55,10 @@ button{font-family:inherit;cursor:pointer}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px}
 .pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700;background:var(--primary-soft);color:var(--primary-ink);white-space:nowrap}
 .schst{font-size:13px;line-height:1.7;padding:8px 12px;border-radius:12px;margin:2px 0 10px;background:var(--ok-soft);color:var(--ok)}.schst.warn{background:var(--rust-soft);color:var(--rust)}
-.nmk{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;color:var(--muted);opacity:.45;flex:none}.nmk svg{width:13px;height:13px}.nmk.on{opacity:1;color:var(--gold-ink);background:var(--gold-soft);box-shadow:0 0 0 1px var(--gold)}.nmk:focus-visible{outline:2px solid var(--primary)}
+.nmk{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none;vertical-align:middle}.nmk::before{content:'';width:7px;height:7px;border-radius:50%;background:#D64545;box-shadow:0 0 0 2px rgba(214,69,69,.18)}.nmk.add::before{background:transparent;border:1.5px dashed var(--muted);box-shadow:none;width:8px;height:8px;box-sizing:border-box}.nmk:focus-visible{outline:2px solid var(--primary);border-radius:50%}
+.npop .xb{position:absolute;top:10px;inset-inline-end:10px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}.npop .onbc{position:relative;padding-top:44px}
 .npop{position:fixed;inset:0;z-index:95;background:rgba(30,20,14,.5);display:flex;align-items:center;justify-content:center;padding:16px}.npop .onbc{max-width:380px;gap:10px}.npop h3{margin:0;font-size:15px}.npop .nt{white-space:pre-wrap;line-height:1.8;background:var(--gold-soft);color:var(--gold-ink);border-radius:12px;padding:10px 12px;font-size:14px}.npop textarea{min-height:96px}
+.dlv{display:flex;flex-direction:column;gap:6px;align-items:stretch}.dlvb{justify-content:center;white-space:normal;text-align:center;line-height:1.5}.btn.okb{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
 .pill.gold{background:var(--gold-soft);color:var(--gold-ink)}
 .pill.rust{background:var(--rust-soft);color:var(--rust)}
 .stats{display:flex;flex-wrap:nowrap;gap:6px;margin-top:12px}
@@ -330,7 +332,7 @@ const STORE_KEY='jamiya-data-v1';
 /* وضع التخزين: بدون إعداد = localStorage (للمعاينة). مع window.JAMIYA_CONFIG = {supabaseUrl, supabaseKey} = قاعدة بيانات Supabase مشتركة. */
 const CFG=Object.assign({supabaseUrl:'',supabaseKey:''},window.JAMIYA_CONFIG||{});
 const REMOTE=!!(CFG.supabaseUrl&&CFG.supabaseKey);
-let creds=null,remoteUsers=[],loadFailed=false,notes={},noteSel=null,noteEdit=false;
+let creds=null,remoteUsers=[],loadFailed=false,notes={},noteSel=null,noteEdit=false,deliv={},delConf='';
 async function rpc(fn,args){
   const r=await fetch(CFG.supabaseUrl+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':CFG.supabaseKey,'Content-Type':'application/json'},body:JSON.stringify(args||{})});
   const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
@@ -685,7 +687,7 @@ function ucurve(N,cur){
     const li=Math.min(N-1,(r+1)*cmax-1),even=r%2===0,x=even?xL:xR;
     if(N>(r+1)*cmax)turns+=`<path d="M${x} ${y(r)} A${rad} ${rad} 0 0 ${even?0:1} ${x} ${y(r+1)}" fill="none" stroke="var(--p${band(li)})" stroke-width="${SW}" opacity="${op(li)}"/>`;
   }
-  const c=geo(tc),k=geo(cur),a=monthPos(s,0),b=monthPos(s,N-1),eg=geo(N-1),F='font-family="Cairo,sans-serif" font-size="15" font-weight="600" fill="var(--muted)"';
+  const c=geo(tc),adx=(c.r%2===0)?-1:1,k=geo(cur),a=monthPos(s,0),b=monthPos(s,N-1),eg=geo(N-1),F='font-family="Cairo,sans-serif" font-size="15" font-weight="600" fill="var(--muted)"';
   const endX=Math.max(45,Math.min(555,eg.xb));
   return`<svg viewBox="0 0 600 ${top+(R-1)*gap+38}" role="img" aria-label="مسار الجمعية، الشهر ${tc+1} من ${N}">
   <path d="${track}" fill="none" stroke="var(--line)" stroke-width="${SW+5}" stroke-linecap="round"/>${turns}${segs}${hits}
@@ -693,25 +695,33 @@ function ucurve(N,cur){
   <text x="${endX.toFixed(1)}" y="${y(R-1)+29}" text-anchor="middle" ${F}>${MONTHS[b.m]} ${b.y}</text>
   ${cur!==tc?`<circle cx="${k.cx.toFixed(1)}" cy="${k.y}" r="11" fill="none" stroke="var(--primary-ink)" stroke-width="3" pointer-events="none"/>`:''}
   <circle class="pulse" cx="${c.cx.toFixed(1)}" cy="${c.y}" r="9" pointer-events="none"/>
-  <circle cx="${c.cx.toFixed(1)}" cy="${c.y}" r="8" fill="var(--gold)" stroke="var(--surface)" stroke-width="3" pointer-events="none"/></svg>`;
+  <circle cx="${c.cx.toFixed(1)}" cy="${c.y}" r="8" fill="var(--gold)" stroke="var(--surface)" stroke-width="3" pointer-events="none"/>
+  <path d="M${(c.cx-adx*2.4).toFixed(1)} ${c.y-3.6} L${(c.cx+adx*2.4).toFixed(1)} ${c.y} L${(c.cx-adx*2.4).toFixed(1)} ${c.y+3.6}" fill="none" stroke="#3B2417" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/></svg>`;
 }
 const noteMark=(i,id)=>{
-  if(!REMOTE||!creds)return'';
+  if(!REMOTE)return'';
   const k=monthKey(state.settings,i),has=!!notes[k+'|'+id];
-  if(!has&&!(can('members')&&noteEdit))return'';
-  return`<button type="button" class="nmk${has?' on':''}" data-act="note" data-k="${k}" data-id="${id}" aria-label="${has?'عرض الملاحظة':'إضافة ملاحظة'}" title="${has?'عرض الملاحظة':'إضافة ملاحظة'}">${ic('note')}</button>`;
+  if(!has&&!(creds&&can('members')&&noteEdit))return'';
+  return`<button type="button" class="nmk${has?'':' add'}" data-act="note" data-k="${k}" data-id="${id}" aria-label="${has?'عرض الملاحظة':'إضافة ملاحظة'}" title="${has?'ملاحظة':'إضافة ملاحظة'}"></button>`;
 };
 function noteHTML(){
   if(!noteSel)return'';
-  const[k,id]=noteSel,m=find(id),idx=keyToIdx(state.settings,k),txt=notes[k+'|'+id]||'',ed=can('members');
+  const[k,id]=noteSel,m=find(id),txt=notes[k+'|'+id]||'',ed=!!(creds&&can('members')&&noteEdit);
   return`<div class="npop" data-act="note-bg" role="dialog" aria-modal="true"><div class="onbc">
-   <h3>${ic('note')} ${esc(m?m.name:'')} · ${mLabel(k)}</h3>
-   ${ed?`<textarea class="in" id="ntxt" maxlength="500" placeholder="اكتب الملاحظة (تظهر للمستخدمين المسجلين فقط)">${esc(txt)}</textarea>
-   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="note-save">حفظ</button>${txt?`<button class="btn danger" data-act="note-del">حذف</button>`:''}<button class="btn" data-act="note-close">إغلاق</button></div>`
-   :`<div class="nt">${esc(txt)}</div><button class="btn" data-act="note-close">إغلاق</button>`}
+   <button type="button" class="xb" data-act="note-close" aria-label="إغلاق">×</button>
+   <h3>${esc(m?m.name:'')} · ${mLabel(k)}</h3>
+   ${ed?`<textarea class="in" id="ntxt" maxlength="500" placeholder="اكتب الملاحظة (تظهر للمستخدمين المسجلين ولصاحب الدور فقط)">${esc(txt)}</textarea>
+   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="note-save">حفظ</button>${txt?`<button class="btn danger" data-act="note-del">حذف</button>`:''}</div>`
+   :`<div class="nt">${esc(txt)}</div>`}
   </div></div>`;
 }
-function showNote(){let b=$('#notebox');if(!b){b=document.createElement('div');b.id='notebox';b.addEventListener('click',click);document.body.appendChild(b)}b.innerHTML=noteHTML();if(noteSel&&can('members')){const t=$('#ntxt');if(t&&!t.value)try{t.focus()}catch(x){}}}
+function showNote(){let b=$('#notebox');if(!b){b=document.createElement('div');b.id='notebox';b.addEventListener('click',click);document.body.appendChild(b)}b.innerHTML=noteHTML();if(noteSel&&creds&&can('members')&&noteEdit){const t=$('#ntxt');if(t&&!t.value)try{t.focus()}catch(x){}}}
+async function loadMyNotes(){
+  if(!REMOTE||creds||!pushMine||!pushOK)return;
+  try{const reg=await navigator.serviceWorker.getRegistration();const sub=reg&&await reg.pushManager.getSubscription();if(!sub)return;
+    const n=await rpc('jamiya_my_notes',{p_endpoint:sub.endpoint});
+    if(n&&typeof n==='object'){notes=n;if(view==='home')renderHome()}}catch(e){}
+}
 async function saveNote(del){
   if(!noteSel)return;const[k,id]=noteSel,v=del?'':($('#ntxt').value||'').trim();
   try{await rpc('jamiya_note_set',{p_u:creds.u,p_p:creds.p,p_month:k,p_member:id,p_text:v});
@@ -756,11 +766,12 @@ function renderHome(){
   const rows=sched.months.filter(m=>!q||m.payments.some(p=>hitName(p.name)));
   const showM=openM||q;
   $('#monsec').innerHTML=`<button class="coll" data-act="tg-m" aria-expanded="${showM}">${ic('table')}الجدول الشهري الكامل<small>${q?rows.length+' شهرًا مطابقًا':N+' شهرًا'}</small><span class="sp"></span>${ic('down','cv')}</button>`+
-   (showM&&REMOTE&&creds&&can('members')?`<div style="margin-top:8px"><button class="btn sm${noteEdit?' pri':''}" data-act="tg-ne">${ic('note')}${noteEdit?'إنهاء إضافة الملاحظات':'إضافة ملاحظات على المبالغ'}</button></div>`:'')+
+   (showM&&REMOTE&&creds&&can('members')?`<div style="margin-top:8px"><button class="btn sm${noteEdit?' pri':''}" data-act="tg-ne">${ic('note')}${noteEdit?'إنهاء تعديل الملاحظات':'إضافة/تعديل ملاحظات على المبالغ'}</button></div>`:'')+
    (showM?`<div class="mrows">${rows.length?rows.map(m=>`<div class="mrow b${Math.floor(m.i/6)%5}${m.i%6===0&&m.i?' bs':''}${m.i===ti?' now':''}"><div class="ml" data-act="goto" data-i="${m.i}" title="عرض هذا الشهر"><b>${MONTHS[m.m]}</b><small>${m.y}</small>${m.i===ti?'<i>الآن</i>':''}</div><div class="chips">${m.payments.map(p=>`<span class="chip${q&&hitName(p.name)?' hit':''}" data-act="who" data-n="${esc(p.name)}" title="عرض كل دفعات ${esc(p.name)}"><span class="cn">${esc(p.name)}</span>${money(p.amount)}${noteMark(m.i,p.id)}</span>`).join('')}</div></div>`).join(''):'<div class="empty-box">لا توجد نتائج مطابقة.</div>'}</div>`:'');
   // جدول الإجماليات
   const mem=state.members.filter(m=>hitName(m.name));
   const showT=openT||q;
+  if(!user){$('#totsec').innerHTML=''}else
   $('#totsec').innerHTML=`<button class="coll" data-act="tg-t" aria-expanded="${showT}">${ic('users')}مستحقات الأعضاء<small>${q?mem.length+' عضوًا مطابقًا':state.members.length+' عضوًا'}</small><span class="sp"></span>${ic('down','cv')}</button>`+
    (showT?`<div class="tw"><table><thead><tr><th>الاسم</th><th>المبلغ الشهري</th><th>إجمالي المستحق</th></tr></thead><tbody>${mem.length?mem.map(m=>`<tr${q?' class="hit"':''}><td class="n">${esc(m.name)}</td><td>${money(toInt(m.monthly))}</td><td>${money(toInt(m.monthly)*N)}</td></tr>`).join(''):'<tr><td colspan="3" class="none">لا توجد نتائج مطابقة.</td></tr>'}</tbody>${q?'':`<tfoot><tr><td>المجموع</td><td>${money(sched.pot)}</td><td>${money(sched.total)}</td></tr></tfoot>`}</table></div>`:'');
   const nm=document.querySelector('.mrows');
@@ -779,6 +790,7 @@ function loginHTML(){
 }
 async function afterAuth(){
   try{notes=await rpc('jamiya_notes_get',{p_u:creds.u,p_p:creds.p})||{}}catch(e){notes={}}
+  try{deliv=await rpc('jamiya_deliveries_get',{p_u:creds.u,p_p:creds.p})||{}}catch(e){deliv={}}
   if(can('users')){try{remoteUsers=await rpc('jamiya_users2',{p_u:creds.u,p_p:creds.p})||[]}catch(e){remoteUsers=[]}}
   if(can('members')||can('pay')){try{phones=await rpc('jamiya_phones',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
   if(can('notify')){await loadNotif()}
@@ -1061,6 +1073,14 @@ function pushPanelHTML(){
   return`<section class="card ppanel" style="margin-top:12px">${inner}</section>`;
 }
 function pushUI(){const h=document.querySelector('header.top');if(h)h.outerHTML=headerHTML();if(view==='home')renderHome()}
+function delivHTML(i,k,list,done){
+  if(!REMOTE||!creds||!can('pay')||!list.length||done.length<list.length)return'';
+  const pays=computeSchedule(state).months[i].payments;if(!pays.length)return'';
+  return`<div class="dlv"><div class="pnote" style="margin-top:10px">اكتمل التحصيل. بعد تسليم المبلغ لصاحب الدور اضغط للتأكيد (مرتين).</div>`+pays.map(p=>{
+    const key=k+'|'+p.id,ok=!!deliv[key],cf=delConf===key;
+    const txt=cf?(ok?'إلغاء التسليم؟ اضغط مرة أخرى':'اضغط مرة أخرى لتأكيد التسليم'):(ok?`تم تسليم ${fmt(p.amount)} إلى ${esc(p.name)}`:`تأكيد تسليم ${fmt(p.amount)} إلى ${esc(p.name)}`);
+    return`<button type="button" class="btn sm dlvb ${cf?'dangerfill':ok?'okb':'pri'}" data-act="deliv" data-k="${k}" data-id="${p.id}">${ic('check')}${txt}</button>`}).join('')+`</div>`;
+}
 function paySecHTML(){
   const s=state.settings,i=clampIdx(cursor),k=monthKey(s,i),mp=monthPos(s,i),ti=todayIdx(),future=i>ti,cp=can('pay');
   const list=state.members.filter(m=>toInt(m.monthly)>0),done=list.filter(m=>isPaid(k,m.id));
@@ -1077,7 +1097,7 @@ function paySecHTML(){
   <div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
   ${future&&!done.length?'<div class="pnote">لم يحن موعد دفع هذا الشهر بعد.</div>':''}
   <div class="pchips">${chips}</div>
-  ${cp?'<div class="pnote">اضغط على الاسم لتأكيد دفعه. ولإلغاء التأكيد اضغط مرتين.</div>':''}`;
+  ${cp?'<div class="pnote">اضغط على الاسم لتأكيد دفعه. ولإلغاء التأكيد اضغط مرتين.</div>':''}${delivHTML(i,k,list,done)}`;
 }
 function renderPay(){
   const e=$('#payBox');if(!e)return;
@@ -1092,7 +1112,7 @@ function renderPay(){
   ${list.length?list.map(m=>{const ok=isPaid(k,m.id),sb=pushSubs[m.id]||0;
     return`<div class="prow${ok?' ok':''}"><div class="pn2"><b>${esc(m.name)}</b>${money(toInt(m.monthly))}</div><span class="bell${sb?' on':''}" title="${sb?'فعّل التنبيهات':'لم يفعّل التنبيهات'}">${ic('bell')}</span>${ok?`<span class="pill okp">${ic('check')}دفع</span><button class="ib" data-act="payundo" data-id="${m.id}" aria-label="تراجع عن التأكيد">${ic('x')}</button>`:`<button class="btn sm pri" data-act="paytog" data-id="${m.id}">${ic('check')}تم الدفع</button>${isNow&&sb&&REMOTE?`<button class="btn sm" data-act="remind" data-id="${m.id}" ${remBusy?'disabled':''}>${ic('bell')}ذكّر</button>`:''}`}</div>`}).join(''):'<p class="hint">أضف الأعضاء أولًا.</p>'}
   <div class="pbtns"><button class="btn sm ${payAllConf?'dangerfill':''}" data-act="payall" ${done.length===list.length?'disabled':''}>${ic('check')}${payAllConf?'تأكيد: الجميع دفعوا':'تأكيد دفع الجميع'}</button>
-  ${REMOTE?`<button class="btn sm" data-act="remindall" ${!isNow||remBusy?'disabled':''}>${ic('bell')}ذكّر كل المتأخرين</button>`:''}</div>
+  ${REMOTE?`<button class="btn sm" data-act="remindall" ${!isNow||remBusy?'disabled':''}>${ic('bell')}ذكّر كل المتأخرين</button>`:''}</div>${delivHTML(i,k,list,done)}
   <p class="hint">${REMOTE?`التذكير التلقائي يوم 23 ويوم 27 الساعة 9 صباحًا بتوقيت مسقط، للمتأخرين فقط. فعّل التنبيهات: ${subsN} من ${list.length}. زر «ذكّر» متاح للشهر الحالي ولمن فعّل التنبيهات.`:'التنبيهات تعمل في النسخة المنشورة فقط.'}</p>`;
 }
 function refreshPay(){if(view==='admin')renderPay();else if(view==='home'){const e=$('#paysec');if(e)e.innerHTML=paySecHTML()}}
@@ -1177,6 +1197,7 @@ function click(e){
   const act=b?b.dataset.act:'';
   if(confirmDel&&act!=='del'){confirmDel=null;if(view==='admin')renderMembers()}
   if(toolsConfirm&&!['demo','clear','restore'].includes(act)){toolsConfirm='';if(view==='admin')renderTools()}
+  if(delConf&&act!=='deliv'){delConf='';refreshPay()}
   if(payAllConf&&act!=='payall'){payAllConf=false;if(view==='admin')renderPay()}
   if(chipConf&&act!=='chippay'){chipConf='';refreshPay()}
   if(!b)return;
@@ -1185,7 +1206,7 @@ function click(e){
     case'go-login':loginErr='';view='login';render();break;
     case'go-home':view='home';render();break;
     case'go-admin':view='admin';render();break;
-    case'logout':user=null;creds=null;notes={};noteEdit=false;noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
+    case'logout':user=null;creds=null;notes={};noteEdit=false;deliv={};delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
     case'login':doLogin();break;
     case'prev':go(-1);break;
     case'next':go(1);break;
@@ -1196,6 +1217,16 @@ function click(e){
     case'tab':tab=b.dataset.t;if(tab==='pay')refreshSubs();document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x.dataset.t===tab));TABS.forEach(x=>{const e=$('#'+x[3]);if(e)e.hidden=x[0]!==tab});break;
     case'goto':cursor=+b.dataset.i;renderHome();try{$('#tlsec').scrollIntoView({behavior:'smooth',block:'nearest'})}catch(x){}break;
     case'tg-ne':noteEdit=!noteEdit;renderHome();break;
+    case'deliv':{
+      const key=b.dataset.k+'|'+b.dataset.id;
+      if(delConf!==key){delConf=key;refreshPay();break}
+      delConf='';const want=!deliv[key],prev={...deliv};
+      if(want)deliv={...deliv,[key]:true};else{deliv={...deliv};delete deliv[key]}
+      refreshPay();
+      rpc('jamiya_set_delivered',{p_u:creds.u,p_p:creds.p,p_month:b.dataset.k,p_member:b.dataset.id,p_done:want})
+        .then(()=>toast(want?'تم تأكيد تسليم المبلغ':'تم إلغاء تأكيد التسليم'))
+        .catch(e=>{deliv=prev;refreshPay();toast(/forbidden|42501/.test(e.message)?'ليس لديك صلاحية':'تعذّر حفظ التسليم')});
+      break}
     case'note':noteSel=[b.dataset.k,b.dataset.id];showNote();break;
     case'note-close':noteSel=null;showNote();break;
     case'note-bg':if(e.target===b){noteSel=null;showNote()}break;
@@ -1374,6 +1405,7 @@ app.addEventListener('pointercancel',endDrag);
   draft=newDraft();cursor=clampIdx(todayIdx());
   try{onb=REMOTE&&!user&&!loadFailed&&!pushMine&&!localStorage.getItem('jamiya-onb')&&state.members.length>0}catch(e){}
   render();
+  loadMyNotes();
   if(REMOTE)document.addEventListener('visibilitychange',async()=>{
     if(document.visibilityState!=='visible'||view==='login')return;
     if(user){await loadPaid();refreshPay();return}

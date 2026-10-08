@@ -469,17 +469,50 @@ function normPhone(v){
   return'';
 }
 const phLocal=p=>String(p||'').replace(/^968(?=\d{8}$)/,'');
+async function applyContact(id,name,tels){
+  tels=tels.map(normPhone).filter(Boolean);
+  if(!tels.length){toast('جهة الاتصال لا تحتوي على رقم صالح');return}
+  if(id==='draft'){draft.phone=tels[0];if(!draft.name.trim()&&name)draft.name=name;renderMembers()}
+  else await setPhone(id,tels[0]);
+  if(tels.length>1)toast('تم اختيار أول رقم من جهة الاتصال');
+}
+function parseVcf(t){
+  const cards=String(t).split(/BEGIN:VCARD/i).slice(1),out=[];
+  for(const c of cards){
+    const fn=(c.match(/^FN[^:\r\n]*:(.*)$/im)||[])[1]||'',tels=[];
+    c.replace(/^(?:item\d+\.)?TEL[^:\r\n]*:(.*)$/gim,(m,v)=>{tels.push(v.trim())});
+    if(tels.length)out.push({name:fn.trim(),tels});
+  }
+  return out;
+}
+function pickVcf(id){
+  let f=document.getElementById('vcfIn');
+  if(!f){f=document.createElement('input');f.type='file';f.id='vcfIn';f.accept='.vcf,text/vcard,text/x-vcard,text/directory';f.hidden=true;document.body.appendChild(f)}
+  f.value='';
+  f.onchange=async()=>{
+    const file=f.files&&f.files[0];if(!file)return;
+    try{
+      const list=parseVcf(await file.text());
+      if(!list.length){toast('الملف لا يحتوي على رقم هاتف');return}
+      await applyContact(id,list[0].name,list[0].tels);
+      if(list.length>1)toast('الملف يحتوي أكثر من جهة، تم اختيار الأولى');
+    }catch(e){toast('تعذّرت قراءة الملف')}
+  };
+  f.click();
+}
 async function pickContact(id){
-  if(!('contacts' in navigator&&'ContactsManager' in window)){toast('اختيار جهة اتصال متاح على أندرويد (Chrome أو Samsung Internet) فقط. اكتب الرقم يدويًا.');return}
-  try{
-    const r=await navigator.contacts.select(['name','tel'],{multiple:false});
-    if(!r||!r.length)return;
-    const c=r[0],tels=(c.tel||[]).map(normPhone).filter(Boolean);
-    if(!tels.length){toast('جهة الاتصال لا تحتوي على رقم صالح');return}
-    if(id==='draft'){draft.phone=tels[0];if(!draft.name.trim()&&c.name&&c.name[0])draft.name=c.name[0];renderMembers()}
-    else await setPhone(id,tels[0]);
-    if(tels.length>1)toast('تم اختيار أول رقم من جهة الاتصال');
-  }catch(e){toast('تعذّر فتح جهات الاتصال')}
+  const api=navigator.contacts&&typeof navigator.contacts.select==='function';
+  if(api){
+    try{
+      const r=await navigator.contacts.select(['name','tel'],{multiple:false});
+      if(!r||!r.length)return;
+      const c=r[0];await applyContact(id,c.name&&c.name[0],c.tel||[]);return;
+    }catch(e){
+      if(e&&e.name==='AbortError')return;
+    }
+  }
+  toast('متصفحك لا يدعم الوصول المباشر لجهات الاتصال. اختر ملف جهة اتصال (vCard) أو اكتب الرقم.');
+  setTimeout(()=>pickVcf(id),900);
 }
 const todayIdx=()=>{const n=new Date(),s=state.settings;return(n.getFullYear()-s.startYear)*12+(n.getMonth()+1-s.startMonth)};
 const clampIdx=i=>Math.max(0,Math.min(monthsCount(state.settings)-1,i));

@@ -462,27 +462,37 @@ function headerHTML(){
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
   <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p></div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
 }
+let onbM=null;
 function onbHTML(){
-  return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">
-  <div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
+  const m=onbM&&find(onbM),mk='<div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>';
+  if(m)return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">${mk}
+  <h2>أهلًا ${esc(m.name)} 👋</h2>
+  <p>يسعدنا انضمامك إلى ${esc(state.settings.name)}. فعّل التنبيهات ليصلك كل جديد: موعد الدفع، ودورك في الاستلام، وأخبار الجمعية.</p>
+  <div class="err" id="onbe"></div>
+  <button class="btn pri" data-act="onb-push" style="width:100%;justify-content:center">${ic('bell')}تفعيل التنبيهات</button>
+  </div><button class="onbskip" data-act="onb-skip">تخطي</button></div>`;
+  return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">${mk}
   <h2>أهلًا بك في ${esc(state.settings.name)}</h2>
-  <p>خطوة واحدة لتصلك تنبيهات الدفع وموعد دورك.</p>
-  <label class="fld"><span>اسمك</span><select class="in" id="onbm"><option value="">اختر اسمك…</option>${state.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select></label>
+  <p>أدخل رقم هاتفك لنتعرّف عليك.</p>
   <label class="fld"><span>رقم هاتفك</span><div class="phn"><b dir="ltr">+968</b><input class="in" id="onbp" type="tel" inputmode="tel" dir="ltr" placeholder="9XXXXXXX" autocomplete="tel"></div></label>
   <div class="err" id="onbe"></div>
-  <button class="btn pri" data-act="onb-go" style="width:100%;justify-content:center">${ic('bell')}حفظ وتفعيل التنبيهات</button>
+  <button class="btn pri" data-act="onb-go" style="width:100%;justify-content:center">متابعة</button>
   </div><button class="onbskip" data-act="onb-skip">تخطي</button></div>`;
 }
-function onbClose(){onb=false;try{localStorage.setItem('jamiya-onb','1')}catch(e){}const o=$('.onb');if(o)o.remove()}
+function onbClose(){onb=false;onbM=null;try{localStorage.setItem('jamiya-onb','1')}catch(e){}const o=$('.onb');if(o)o.remove()}
 async function onbGo(){
-  const id=($('#onbm')||{}).value,ph=(($('#onbp')||{}).value||'').trim(),say=m=>{const e=$('#onbe');if(e)e.textContent=m};
-  if(!id)return say('اختر اسمك من القائمة.');
+  const ph=(($('#onbp')||{}).value||'').trim(),say=m=>{const e=$('#onbe');if(e)e.textContent=m};
   if(ph.replace(/\D/g,'').length<8)return say('أدخل رقم هاتف صحيح.');
-  say('جارٍ الحفظ…');
-  try{await rpc('jamiya_member_phone',{p_member:id,p_phone:ph})}
-  catch(e){return say(/invalid_phone/.test(e.message)?'رقم الهاتف غير صحيح.':'تعذّر حفظ الرقم، حاول مرة أخرى.')}
-  if(!pushOK){onbClose();toast('تم حفظ رقمك. لتفعيل التنبيهات على الآيفون أضف الموقع للشاشة الرئيسية ثم افتحه منها');return}
-  const ok=await pushEnable(id,say);
+  say('جارٍ التحقق…');
+  let id=null;
+  try{id=await rpc('jamiya_member_by_phone',{p_phone:ph})}catch(e){return say('تعذّر الاتصال، حاول مرة أخرى.')}
+  if(!id||!find(id))return say('هذا الرقم غير مسجّل لدينا. تواصل مع مسؤول الجمعية لإضافة رقمك.');
+  onbM=id;const o=$('.onb');if(o)o.outerHTML=onbHTML();
+}
+async function onbPush(){
+  const say=m=>{const e=$('#onbe');if(e)e.textContent=m};
+  if(!pushOK){onbClose();toast('لتفعيل التنبيهات على الآيفون أضف الموقع للشاشة الرئيسية ثم افتحه منها');return}
+  const ok=await pushEnable(onbM,say);
   if(ok)onbClose();
 }
 function render(){
@@ -940,6 +950,7 @@ function click(e){
     case'ucancel':editU=null;renderUsers();break;
     case'tg-mem':openMem.has(id)?openMem.delete(id):openMem.add(id);renderMembers();break;
     case'onb-go':onbGo();break;
+    case'onb-push':onbPush();break;
     case'onb-skip':onbClose();break;
     case'tg-ml':openML=!openML;renderMembers();break;
     case'chippay':{

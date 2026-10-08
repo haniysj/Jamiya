@@ -54,6 +54,7 @@ button{font-family:inherit;cursor:pointer}
 .bellbtn.on{background:var(--gold-soft);color:var(--gold-ink);border-color:var(--gold)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px}
 .pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700;background:var(--primary-soft);color:var(--primary-ink);white-space:nowrap}
+.schst{font-size:13px;line-height:1.7;padding:8px 12px;border-radius:12px;margin:2px 0 10px;background:var(--ok-soft);color:var(--ok)}.schst.warn{background:var(--rust-soft);color:var(--rust)}
 .pill.gold{background:var(--gold-soft);color:var(--gold-ink)}
 .pill.rust{background:var(--rust-soft);color:var(--rust)}
 .stats{display:flex;flex-wrap:nowrap;gap:6px;margin-top:12px}
@@ -378,7 +379,7 @@ function simulate(order,N){
 }
 const PREF_KEYS=['start','mid','nearMid'];
 function payoutsOf(d){const sc=computeSchedule(d),o={};sc.months.forEach(m=>{o[monthKey(d.settings,m.i)]=m.payments.map(p=>({id:p.id,amount:p.amount}))});return o}
-function computeSchedule(data){
+function softSchedule(data){
   const s=data.settings,N=monthsCount(s);
   const ms=data.members.map(m=>({id:m.id,name:m.name,pref:PREF_KEYS.includes(m.pref)?m.pref:'mid',monthly:toInt(m.monthly),months:Array.isArray(m.months)?m.months:[]}));
   const groups={start:[],mid:[],nearMid:[]};
@@ -410,6 +411,80 @@ function computeSchedule(data){
   }
   const months=sim.months.map((p,i)=>{const q=monthPos(s,i);return{i,y:q.y,m:q.m,payments:p}});
   return{N,pot:sim.P,months,total:sim.P*N};
+}
+/* ===== الأشهر المفضلة ملزمة =====
+   كل عضو لديه أشهر مفضلة يستلم فيها فقط. إذا اختار أكثر من عضو الشهر نفسه يُوزَّع الوعاء بينهم بالتناسب
+   بحيث يصل كل عضو إلى إجمالي استحقاقه بالضبط (المبلغ الشهري × عدد الأشهر). الأعضاء بلا أشهر مفضلة يستلمون
+   فقط في الأشهر التي لم يخترها أحد. كل المبالغ أعداد صحيحة. */
+function maxFlowInt(n,edges,s,t){
+  const g=Array.from({length:n},()=>[]),E=[];
+  edges.forEach(([u,v,c])=>{g[u].push(E.length);E.push({v,c});g[v].push(E.length);E.push({v:u,c:0})});
+  let flow=0;
+  for(;;){
+    const prev=new Array(n).fill(-1);prev[s]=-2;const q=[s];
+    for(let h=0;h<q.length&&prev[t]===-1;h++){const u=q[h];g[u].forEach(id=>{const e=E[id];if(e.c>0&&prev[e.v]===-1){prev[e.v]=id;q.push(e.v)}})}
+    if(prev[t]===-1)break;
+    let f=Infinity,v=t;while(v!==s){const id=prev[v];f=Math.min(f,E[id].c);v=E[id^1].v}
+    v=t;while(v!==s){const id=prev[v];E[id].c-=f;E[id^1].c+=f;v=E[id^1].v}
+    flow+=f;
+  }
+  return{flow,E,g};
+}
+function mandatorySchedule(data){
+  const s=data.settings,N=monthsCount(s);
+  const ms=data.members.map(m=>({id:m.id,name:m.name,monthly:toInt(m.monthly),months:Array.isArray(m.months)?m.months:[]})).filter(m=>m.monthly>0);
+  const P=ms.reduce((a,m)=>a+m.monthly,0);
+  if(!ms.length||!ms.some(m=>m.months.some(k=>{const i=keyToIdx(s,k);return i>=0&&i<N})))return null;
+  const sets=ms.map(m=>[...new Set(m.months.map(k=>keyToIdx(s,k)).filter(i=>i>=0&&i<N))]);
+  const claimed=new Set();sets.forEach(a=>a.forEach(i=>claimed.add(i)));
+  const free=[];for(let i=0;i<N;i++)if(!claimed.has(i))free.push(i);
+  const allowed=sets.map(a=>a.length?a:free);
+  const need=ms.map(m=>m.monthly*N),M=ms.length;
+  // 1) إمكانية الالتزام (تدفق صحيح)
+  const S=N+M,T=S+1,edges=[],cell=[];
+  for(let k=0;k<N;k++)edges.push([S,k,P]);
+  allowed.forEach((a,i)=>a.forEach(k=>{cell.push([i,k,edges.length]);edges.push([k,N+i,P])}));
+  for(let i=0;i<M;i++)edges.push([N+i,T,need[i]]);
+  const base=maxFlowInt(T+1,edges,S,T);
+  if(base.flow!==P*N){
+    const short=ms.filter((m,i)=>allowed[i].length*P<need[i]).map((m,i)=>m.name);
+    return{note:short.length?'لا تكفي الأشهر المتاحة لـ: '+short.join('، ')+' (يلزم اختيار أشهر أكثر ليصل العضو إلى إجمالي استحقاقه، أو ترك أشهر غير مختارة)':'الأشهر المفضلة متعارضة ولا يمكن توزيع الوعاء عليها بالكامل'}
+  }
+  const baseX=new Map();cell.forEach(([i,k,ei])=>{baseX.set(i+'_'+k,base.E[2*ei+1].c)});
+  // 2) توزيع متوازن (تناسبي) ثم تقريب لأعداد صحيحة
+  const x=new Map();cell.forEach(([i,k])=>x.set(i+'_'+k,1));
+  for(let it=0;it<400;it++){
+    const rs=new Array(N).fill(0);cell.forEach(([i,k])=>rs[k]+=x.get(i+'_'+k));
+    cell.forEach(([i,k])=>{if(rs[k]>0)x.set(i+'_'+k,x.get(i+'_'+k)*P/rs[k])});
+    const cs=new Array(M).fill(0);cell.forEach(([i,k])=>cs[i]+=x.get(i+'_'+k));
+    cell.forEach(([i,k])=>{if(cs[i]>0)x.set(i+'_'+k,x.get(i+'_'+k)*need[i]/cs[i])});
+  }
+  const fl=new Map(),rowL=new Array(N).fill(P),colL=need.slice();
+  cell.forEach(([i,k])=>{const v=Math.floor(x.get(i+'_'+k)+1e-9);fl.set(i+'_'+k,v);rowL[k]-=v;colL[i]-=v});
+  let final=null;
+  if(rowL.every(v=>v>=0)&&colL.every(v=>v>=0)){
+    const ed=[],c2=[];
+    for(let k=0;k<N;k++)if(rowL[k]>0)ed.push([S,k,rowL[k]]);
+    cell.forEach(([i,k])=>{const fr=x.get(i+'_'+k)-Math.floor(x.get(i+'_'+k)+1e-9);if(fr>1e-9){c2.push([i,k,ed.length]);ed.push([k,N+i,1])}});
+    for(let i=0;i<M;i++)if(colL[i]>0)ed.push([N+i,T,colL[i]]);
+    const need2=rowL.reduce((a,b)=>a+b,0),r=maxFlowInt(T+1,ed,S,T);
+    if(r.flow===need2){final=new Map(fl);c2.forEach(([i,k,ei])=>{final.set(i+'_'+k,final.get(i+'_'+k)+r.E[2*ei+1].c)})}
+  }
+  if(!final)final=baseX;
+  const months=[];
+  for(let k=0;k<N;k++){
+    const q=monthPos(s,k),pays=[];
+    ms.forEach((m,i)=>{const v=final.get(i+'_'+k)||0;if(v>0)pays.push({id:m.id,name:m.name,amount:v})});
+    months.push({i:k,y:q.y,m:q.m,payments:pays});
+  }
+  return{N,pot:P,months,total:P*N,mandatory:true};
+}
+function computeSchedule(data){
+  const man=mandatorySchedule(data);
+  if(man&&man.mandatory)return man;
+  const sc=softSchedule(data);
+  if(man&&man.note)sc.note=man.note;
+  return sc;
 }
 // ==/ENGINE==
 
@@ -749,7 +824,8 @@ function memberRow(m,i){
 }
 function renderMembers(){
   const N=monthsCount(state.settings),d=draft;
-  $('#memBox').innerHTML=`<h3>${ic('users')}الأعضاء</h3>
+  const sc0=computeSchedule(state),stHTML=sc0.mandatory?`<div class="schst">✓ الأشهر المفضلة ملزمة: كل عضو يستلم في أشهره فقط، والشهر المشترك يُوزَّع بين المختارين.</div>`:(sc0.note?`<div class="schst warn">⚠ الأشهر المفضلة غير مطبّقة حاليًا: ${esc(sc0.note)}</div>`:'');
+  $('#memBox').innerHTML=`<h3>${ic('users')}الأعضاء</h3>${stHTML}
   <div class="addbox"><div class="fld"><span>اسم العضو الجديد</span><input class="in" data-d="name" value="${esc(d.name)}" placeholder="مثال: سالم الحارثي"></div>
    ${REMOTE&&can('members')?`<div class="fld"><span>رقم الهاتف (اختياري)</span><div class="phrow"><input class="in" dir="ltr" inputmode="tel" data-d="phone" value="${esc(phLocal(d.phone))}" placeholder="9XXXXXXX"></div></div>`:''}
    <div class="mem-bot"><label class="fld amt"><span>المبلغ الشهري (إجباري)</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-d="monthly" value="${d.monthly}"></label>

@@ -62,6 +62,9 @@ button{font-family:inherit;cursor:pointer}
 .stat{flex:1 1 0;min-width:0;white-space:nowrap}
 @media(max-width:560px){.stat{flex-direction:column;align-items:flex-start;gap:1px;padding:5px 9px;font-size:12px}.stat span{font-size:11px}}
 .bellbtn{height:auto;min-height:32px;justify-content:space-between;padding:3px 10px}.bellbtn .bt{display:flex;align-items:center;gap:6px}.bellbtn .bk{display:flex;flex-direction:column;align-items:center;line-height:1.1;max-width:70px}.bellbtn .bk svg{width:15px;height:15px}.bellbtn .bk small{font-size:9.5px;font-weight:600;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:400px){.stats .stat:not(.inl){padding:5px 6px}.stats .stat:not(.inl) span{font-size:10px}}
+.stat.inl{flex:none;flex-direction:row;align-items:center;gap:6px;padding:2px 10px;font-size:13px}.stat.inl span{font-size:13px}
+.ord{display:flex;align-items:center;gap:6px;margin-inline-start:auto;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
 .mtg{width:34px;height:34px}.mtg svg{transition:transform .2s}.mtg[aria-expanded="true"] svg{transform:rotate(180deg)}
 .demo{margin-top:10px;padding:7px 12px;border-radius:10px;background:var(--gold-soft);color:var(--gold-ink);font-size:13px;font-weight:600}
 .sec{margin-top:16px}
@@ -250,7 +253,7 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
 <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></symbol>
 <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
-<symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-aup" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol><symbol id="i-adn" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
 <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -621,13 +624,11 @@ function memberRow(m,i){
   const N=monthsCount(state.settings),open=openPicker===m.id,del=confirmDel===m.id,om=openMem.has(m.id)||open;
   return`<div class="mem"><div class="mem-top"><span class="idx">${i+1}</span>
    <input class="in name" data-f="name" data-id="${m.id}" value="${esc(m.name)}" aria-label="اسم العضو">
-   <div class="acts"><button class="ib mtg" data-act="tg-mem" data-id="${m.id}" aria-expanded="${om}" aria-label="${om?'طي بيانات العضو':'عرض بيانات العضو'}">${ic('down')}</button><button class="ib" data-act="up" data-id="${m.id}" aria-label="أعلى" ${i===0?'disabled':''}>${ic('up')}</button>
-   <button class="ib" data-act="dn" data-id="${m.id}" aria-label="أسفل" ${i===state.members.length-1?'disabled':''}>${ic('down')}</button>
-   <button class="btn sm ${del?'dangerfill':'danger'}" data-act="del" data-id="${m.id}" aria-label="حذف">${ic('trash')}${del?'تأكيد الحذف':''}</button></div></div>
+   <div class="acts"><button class="ib mtg" data-act="tg-mem" data-id="${m.id}" aria-expanded="${om}" aria-label="${om?'طي بيانات العضو':'عرض بيانات العضو'}">${ic('down')}</button><button class="btn sm ${del?'dangerfill':'danger'}" data-act="del" data-id="${m.id}" aria-label="حذف">${ic('trash')}${del?'تأكيد الحذف':''}</button></div></div>
    ${om?`<div class="mem-bot"><label class="fld amt"><span>المبلغ الشهري</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-f="monthly" data-id="${m.id}" value="${toInt(m.monthly)}"></label>
    <div class="tot"><span>إجمالي المستحق</span><b data-tot="${m.id}">${money(toInt(m.monthly)*N)}</b></div>
    <label class="fld pf"><span>موعد الاستلام</span>${prefSel(m.pref,`data-f="pref" data-id="${m.id}"`)}</label>
-   <button class="btn sm" data-act="tp" data-id="${m.id}">${ic('cal')}أشهر مفضلة (<span data-cnt="${m.id}">${inRange(m.months).length}</span>)</button></div>
+   <button class="btn sm" data-act="tp" data-id="${m.id}">${ic('cal')}أشهر مفضلة (<span data-cnt="${m.id}">${inRange(m.months).length}</span>)</button><div class="ord"><span>تغيير الأسبقية:</span><button class="ib" data-act="up" data-id="${m.id}" aria-label="رفع الأسبقية" ${i===0?'disabled':''}>${ic('aup')}</button><button class="ib" data-act="dn" data-id="${m.id}" aria-label="خفض الأسبقية" ${i===state.members.length-1?'disabled':''}>${ic('adn')}</button></div></div>
    ${open?picker(m.months,m.id):''}${tagsHTML(m.months,m.id)}`:''}</div>`;
 }
 function renderMembers(){
@@ -752,7 +753,7 @@ function paySecHTML(){
     return cp?`<button type="button" class="${cls}" data-act="chippay" data-id="${m.id}">${inner}</button>`:`<span class="${cls}">${inner}</span>`;
   }).join('')||'<span class="none">لا توجد نتائج مطابقة.</span>';
   return`<div class="ptop"><h2>${ic('check')}التحصيل · ${MONTHS[mp.m]} ${mp.y}</h2></div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px"><span class="pill okp">${ic('check')}دفع ${done.length} من ${list.length}</span><span class="stat" style="padding:1px 10px"><span>المحصّل</span>${money(sum)}<span>من</span>${money(tot)}</span></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px"><span class="pill okp">${ic('check')}دفع ${done.length} من ${list.length}</span><span class="stat inl"><span>المحصّل</span>${money(sum)}<span>من</span>${money(tot)}</span></div>
   <div class="pbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
   ${future&&!done.length?'<div class="pnote">لم يحن موعد دفع هذا الشهر بعد.</div>':''}
   <div class="pchips">${chips}</div>
@@ -766,7 +767,7 @@ function renderPay(){
   const subsN=list.filter(m=>pushSubs[m.id]>0).length,N=monthsCount(s);
   e.innerHTML=`<h3>${ic('check')}التحصيل</h3>
   <div class="pnav"><button class="ib" data-act="paynav" data-d="-1" aria-label="الشهر السابق" ${i<=0?'disabled':''}>${ic('chev')}</button><b>${MONTHS[mp.m]} ${mp.y}${isNow?' · الحالي':''}</b><button class="ib" data-act="paynav" data-d="1" aria-label="الشهر التالي" ${i>=N-1?'disabled':''} style="transform:scaleX(-1)">${ic('chev')}</button></div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill okp">${ic('check')}دفع ${done.length} من ${list.length}</span><span class="stat" style="padding:1px 10px"><span>المحصّل</span>${money(sum)}<span>من</span>${money(tot)}</span></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill okp">${ic('check')}دفع ${done.length} من ${list.length}</span><span class="stat inl"><span>المحصّل</span>${money(sum)}<span>من</span>${money(tot)}</span></div>
   <div class="pbar"><i style="width:${tot?Math.round(sum*100/tot):0}%"></i></div>
   ${list.length?list.map(m=>{const ok=isPaid(k,m.id),sb=pushSubs[m.id]||0;
     return`<div class="prow${ok?' ok':''}"><div class="pn2"><b>${esc(m.name)}</b>${money(toInt(m.monthly))}</div><span class="bell${sb?' on':''}" title="${sb?'فعّل التنبيهات':'لم يفعّل التنبيهات'}">${ic('bell')}</span>${ok?`<span class="pill okp">${ic('check')}دفع</span><button class="ib" data-act="payundo" data-id="${m.id}" aria-label="تراجع عن التأكيد">${ic('x')}</button>`:`<button class="btn sm pri" data-act="paytog" data-id="${m.id}">${ic('check')}تم الدفع</button>${isNow&&sb&&REMOTE?`<button class="btn sm" data-act="remind" data-id="${m.id}" ${remBusy?'disabled':''}>${ic('bell')}ذكّر</button>`:''}`}</div>`}).join(''):'<p class="hint">أضف الأعضاء أولًا.</p>'}

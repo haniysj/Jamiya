@@ -497,11 +497,10 @@ function headerHTML(){
   <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p></div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
 }
 const iosSteps=()=>`<div class="ios"><div><b>تنبيهات الآيفون تعمل فقط من أيقونة التطبيق على الشاشة الرئيسية</b> (شرط من أبل، ويلزم iOS 16.4 أو أحدث). تحتاج هذه الخطوات مرة واحدة:</div>
-  <ol><li>افتح الموقع في <b>Safari</b>، ثم اضغط زر المشاركة ${ic('share')} أسفل الشاشة.</li>
+  <ol><li>افتح الموقع في <b>Safari</b> (وليس داخل تطبيق آخر)، ثم اضغط زر المشاركة ${ic('share')} في شريط Safari نفسه.</li>
   <li>اختر <b>«إضافة إلى الشاشة الرئيسية»</b> ${ic('plussq')} ثم «إضافة».</li>
   <li>افتح <b>الجمعية</b> من أيقونتها على الشاشة الرئيسية (وليس من Safari).</li>
-  <li>أدخل رقمك من جديد، ثم اضغط «تفعيل التنبيهات» واسمح بها.</li></ol>
-  <button class="btn" data-act="install" style="justify-content:center">${ic('share')}فتح قائمة المشاركة الآن</button></div>`;
+  <li>أدخل رقمك من جديد، ثم اضغط «تفعيل التنبيهات» واسمح بها.</li></ol></div>`;
 let onbM=null,onbIos=false,deferredInstall=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;const x=document.querySelector('[data-act="install"]');if(!x&&view==='home'&&typeof render==='function'&&state){const o=$('.onb');if(o)o.outerHTML=onbHTML()}});
 window.addEventListener('appinstalled',()=>{deferredInstall=null;toast('تم تثبيت التطبيق')});
@@ -510,7 +509,6 @@ const instBtn=(cls)=>canInstall()?`<button class="btn ${cls||'sm'}" data-act="in
 async function installApp(){
   if(deferredInstall){const d=deferredInstall;deferredInstall=null;try{d.prompt();await d.userChoice}catch(e){}return}
   if(isIOS){
-    if(navigator.share){try{await navigator.share({title:state.settings.name,url:location.origin+'/'});toast('اختر «إضافة إلى الشاشة الرئيسية» من القائمة');return}catch(e){if(e&&e.name==='AbortError')return}}
     const o=$('.onb');if(o){onbIos=true;if(!onbM)onbM=null;o.outerHTML=onbHTML();return}
     pushOpen=true;pushUI();return}
   toast('من قائمة المتصفح ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»');

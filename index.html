@@ -331,6 +331,22 @@ body.enter .tc:nth-child(1){animation-delay:.3s}body.enter .tc:nth-child(2){anim
 @media (hover:hover){.stat,.tc,.chip{transition:transform .18s ease,box-shadow .18s ease}.stat:hover,.tc:hover{transform:translateY(-3px);box-shadow:var(--shadow)}.chip:hover{transform:translateY(-1px)}}
 .btn:active,.theme:active,.arrow:active,.ib:active{transform:scale(.94)}
 .pdfb{margin-right:auto;padding:5px 8px!important;border-color:#D32F2F!important}.pdfb svg{width:22px;height:22px;display:block}.pdfb[disabled]{opacity:.5}
+#printroot{display:none}
+.bellrow{display:flex;gap:6px;align-items:stretch}.bellrow .bellbtn{flex:1;width:auto;min-width:0}.theme.ulk{width:36px;height:auto;min-height:32px;border-radius:10px;flex:none}.theme.ulk svg{width:18px;height:18px}.theme.ulk.on{background:var(--rust);border-color:var(--rust);color:#fff;animation:pl 1s infinite}
+.gate{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;gap:12px}
+.gate .onbc{max-width:380px}.gate .mark{margin:0 auto;width:54px;height:54px}.gate .mark svg{width:34px;height:18px}.gate h2{margin:0;text-align:center;font-size:19px;color:var(--primary-ink)}.gate p{margin:0;text-align:center;color:var(--muted);font-size:13px}
+.gate .alink{background:none;border:0;color:var(--muted);font-size:12.5px;text-decoration:underline;cursor:pointer;padding:6px;font-family:inherit}
+.gate .foot{position:static;margin-top:6px}
+.devrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
+@media print{
+  @page{size:A4;margin:0}
+  html,body{background:#fff!important}
+  body.printing>*:not(#printroot){display:none!important}
+  body.printing #printroot{display:block!important}
+  #printroot .pg{break-after:page;page-break-after:always;margin:0}
+  #printroot .pg:last-child{break-after:auto;page-break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 @media (prefers-reduced-motion:reduce){#splash{transition:none}}
 </style>
 </head><body>
@@ -374,6 +390,9 @@ const STORE_KEY='jamiya-data-v1';
 /* وضع التخزين: بدون إعداد = localStorage (للمعاينة). مع window.JAMIYA_CONFIG = {supabaseUrl, supabaseKey} = قاعدة بيانات Supabase مشتركة. */
 const CFG=Object.assign({supabaseUrl:'',supabaseKey:''},window.JAMIYA_CONFIG||{});
 const REMOTE=!!(CFG.supabaseUrl&&CFG.supabaseKey);
+let devTok='';try{devTok=localStorage.getItem('jamiya-dev')||''}catch(e){}
+if(devTok.length<20){devTok=Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>b.toString(16).padStart(2,'0')).join('');try{localStorage.setItem('jamiya-dev',devTok)}catch(e){}}
+let devMember=null,devices={},devConf='',unlinkConf=false,unlinkT=null,gateBusy=false;
 let creds=null,remoteUsers=[],loadFailed=false,notes={},noteSel=null,noteEdit=false,deliv={},delConf='';
 async function rpc(fn,args){
   const r=await fetch(CFG.supabaseUrl+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':CFG.supabaseKey,'Content-Type':'application/json'},body:JSON.stringify(args||{})});
@@ -382,7 +401,7 @@ async function rpc(fn,args){
   return j;
 }
 const Storage=REMOTE?{
-  async load(){try{loadFailed=false;return await rpc('jamiya_get')}catch(e){loadFailed=true;return null}},
+  async load(){try{loadFailed=false;return await rpc('jamiya_get2',{p_token:devTok,p_u:creds?creds.u:null,p_p:creds?creds.p:null})}catch(e){loadFailed=true;return null}},
   async save(d){
     if(!creds||loadFailed)return false;
     try{await rpc('jamiya_save',{p_u:creds.u,p_p:creds.p,p_data:{settings:d.settings,members:d.members,demo:!!d.demo,payouts:payoutsOf(d)}});return true}catch(e){return false}
@@ -593,7 +612,7 @@ let phones={},onb=false,perms=[],openMem=new Set(),openML=true,editU=null,chipCo
 const ALLP=['pay','members','users','notify'];
 const PERM_T={pay:'تأكيد الدفع والتذكير',members:'إدارة الأعضاء والإعدادات والبيانات',users:'إدارة المستخدمين',notify:'إرسال وجدولة التنبيهات'};
 const PERM_S={pay:'التحصيل',members:'الأعضاء',users:'المستخدمون',notify:'التنبيهات'};
-const can=x=>!!user&&perms.includes(x);const tabOk=t=>t[4]===''?!!user&&!perms.includes('users'):can(t[4]);
+const can=x=>!!user&&perms.includes(x);const gated=()=>REMOTE&&!user&&!devMember;const tabOk=t=>t[4]===''?!!user&&!perms.includes('users'):can(t[4]);
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -636,7 +655,7 @@ function headerHTML(){
   if(view==='home'){
     row=user?`<button class="theme pri wl" data-act="go-admin" aria-label="لوحة التحكم" title="لوحة التحكم">${ic('gear')}<span class="tl">لوحة التحكم</span></button><button class="theme dg wl" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}<span class="tl">تسجيل الخروج</span></button>`
       :`<button class="theme pri wl" data-act="go-login" aria-label="دخول الإدارة" title="دخول الإدارة">${ic('lock')}<span class="tl">دخول الإدارة</span></button>`;
-    if(REMOTE)bell=`<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk">${ic('check')}<small>${esc(((find(pushMine.m)||{}).name||'').trim().split(/\s+/)[0])}</small></span>`:''}</button>`;
+    if(REMOTE)bell=`<div class="bellrow"><button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk">${ic('check')}<small>${esc(((find(pushMine.m)||{}).name||'').trim().split(/\s+/)[0])}</small></span>`:''}</button>${devMember&&!user?`<button class="theme ulk${unlinkConf?' dg on':''}" data-act="unlink" aria-label="إلغاء ارتباط هذا الجهاز برقم الهاتف" title="${unlinkConf?'اضغط مرة أخرى للتأكيد':'إلغاء ارتباط هذا الجهاز برقم الهاتف'}">${ic('phone')}</button>`:''}</div>`;
   }else if(view==='admin')row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button><button class="theme dg wl" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}<span class="tl">تسجيل الخروج</span></button>`;
   else row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button>`;
   try{localStorage.setItem('jamiya-name',s.name)}catch(e){}
@@ -647,7 +666,7 @@ const iosSteps=()=>`<div class="ios"><div><b>تنبيهات الآيفون تع�
   <ol><li>افتح الموقع في <b>Safari</b> (وليس داخل تطبيق آخر)، ثم اضغط زر المشاركة ${ic('share')} في شريط Safari نفسه.</li>
   <li>اختر <b>«إضافة إلى الشاشة الرئيسية»</b> ${ic('plussq')} ثم «إضافة».</li>
   <li>افتح <b>الجمعية</b> من أيقونتها على الشاشة الرئيسية (وليس من Safari).</li>
-  <li>أدخل رقمك من جديد، ثم اضغط «تفعيل التنبيهات» واسمح بها.</li></ol></div>`;
+  <li>قبل فتح التطبيق: من Safari اضغط رمز الهاتف بجانب «التنبيهات» مرتين لإلغاء ارتباط المتصفح برقمك (لأن التطبيق يُعدّ جهازًا مستقلًا).</li><li>في التطبيق أدخل رقمك، ثم اضغط «تفعيل التنبيهات» واسمح بها.</li></ol></div>`;
 let onbM=null,onbIos=false,deferredInstall=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;const x=document.querySelector('[data-act="install"]');if(!x&&view==='home'&&typeof render==='function'&&state){const o=$('.onb');if(o)o.outerHTML=onbHTML()}});
 window.addEventListener('appinstalled',()=>{deferredInstall=null;toast('تم تثبيت التطبيق')});
@@ -659,6 +678,58 @@ async function installApp(){
     const o=$('.onb');if(o){onbIos=true;if(!onbM)onbM=null;o.outerHTML=onbHTML();return}
     pushOpen=true;pushUI();return}
   toast('من قائمة المتصفح ⋮ اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»');
+}
+function gateHTML(){
+  const mk='<div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>';
+  let nm='';try{nm=localStorage.getItem('jamiya-name')||''}catch(e){}
+  return`<div class="gate"><div class="onbc">${mk}
+  <h2>${esc(nm||'الجمعية')}</h2>
+  <p>أدخل رقم هاتفك المسجّل لدى الجمعية للدخول. يُربط رقمك بهذا الجهاز.</p>
+  <label class="fld"><span>رقم هاتفك</span><div class="phn"><input class="in" id="gp" type="tel" inputmode="tel" dir="ltr" placeholder="9XXXXXXX" autocomplete="tel"><b dir="ltr">+968</b></div></label>
+  <div class="err" id="gerr">${loadFailed?'تعذّر الاتصال بقاعدة البيانات. تحقق من الإنترنت.':''}</div>
+  <button class="btn pri" data-act="gate-go" style="width:100%;justify-content:center">${ic('phone')}دخول</button>
+  </div><button class="alink" data-act="go-login">دخول الإدارة</button><div class="foot">إعداد: هاني الغطريفي</div></div>`;
+}
+async function gateGo(){
+  if(gateBusy)return;
+  const ph=(($('#gp')||{}).value||'').trim(),say=m=>{const e=$('#gerr');if(e)e.textContent=m};
+  if(ph.replace(/\D/g,'').length<8)return say('أدخل رقم هاتف صحيح.');
+  gateBusy=true;say('جارٍ التحقق…');
+  try{
+    let r;try{r=await rpc('jamiya_device_claim',{p_phone:ph,p_token:devTok})}catch(e){return say('تعذّر الاتصال، حاول مرة أخرى.')}
+    if(!r||!r.ok){
+      if(r&&r.error==='taken')return say('هذا الرقم مرتبط بجهاز آخر. لاستخدامه هنا ألغِ الارتباط من الجهاز الأول (رمز الهاتف بجانب التنبيهات)، أو تواصل مع مسؤول الجمعية. وإن كان الجهاز نفسه (المتصفح ثم أيقونة التطبيق) فألغِ الارتباط من المتصفح أولًا.');
+      if(r&&r.error==='device_bound')return say('هذا الجهاز مرتبط برقم آخر. ألغِ الارتباط أولًا.');
+      return say('هذا الرقم غير مسجّل لدينا. تواصل مع مسؤول الجمعية لإضافة رقمك.');
+    }
+    devMember=r.member;
+    const raw=await Storage.load();
+    if(!raw){devMember=null;return say('تعذّر تحميل بيانات الجمعية. حاول مرة أخرى.')}
+    state=normalize(raw)||defaultData();
+    await Promise.all([loadPaid(),loadDeliv()]);
+    cursor=clampIdx(todayIdx());view='home';
+    onbM=devMember;onb=!!find(devMember)&&!pushMine;
+    render();loadMyNotes();
+  }finally{gateBusy=false}
+}
+async function unlinkDevice(){
+  if(!unlinkConf){unlinkConf=true;pushUI();toast('اضغط مرة أخرى لتأكيد إلغاء ارتباط هذا الجهاز');clearTimeout(unlinkT);unlinkT=setTimeout(()=>{unlinkConf=false;if(view==='home')pushUI()},4500);return}
+  clearTimeout(unlinkT);unlinkConf=false;
+  try{await rpc('jamiya_device_release',{p_token:devTok})}catch(e){pushUI();return toast('تعذّر إلغاء الارتباط. تحقق من الاتصال.')}
+  try{const reg=await navigator.serviceWorker.getRegistration();const sub=reg&&await reg.pushManager.getSubscription();if(sub){try{await rpc('jamiya_push_unsubscribe',{p_endpoint:sub.endpoint})}catch(e){}await sub.unsubscribe()}}catch(e){}
+  releaseLocal();
+}
+function releaseLocal(){
+  devMember=null;pushMine=null;notes={};onb=false;onbM=null;pushOpen=false;view='home';
+  try{localStorage.removeItem('jamiya-push');localStorage.removeItem('jamiya-onb')}catch(e){}
+  state=defaultData();render();
+}
+async function devRelease(id){
+  if(devConf!==id){devConf=id;renderMembers();return}
+  devConf='';
+  try{await rpc('jamiya_admin_release',{p_u:creds.u,p_p:creds.p,p_member:id});delete devices[id];toast('تم إلغاء ربط الجهاز')}
+  catch(e){toast('تعذّر إلغاء الربط')}
+  renderMembers();
 }
 function onbHTML(){
   const m=onbM&&find(onbM),mk='<div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>';
@@ -698,6 +769,7 @@ async function onbPush(){
   if(ok)onbClose();
 }
 function render(){
+  if(gated()&&view!=='login'){$('#app').innerHTML=gateHTML();return}
   if(view==='admin'){const t=TABS.find(x=>x[0]===tab);if(!t||!tabOk(t))tab=firstTab()}
   let body='';
   if(view==='home')body=`<div id="pushpanel"></div><div id="stats"></div><div id="ucard"></div>
@@ -829,14 +901,12 @@ function loadScript(u){return new Promise((ok,no)=>{if(document.querySelector('s
 async function makePdf(btn){
   if(pdfBusy)return;pdfBusy=true;if(btn)btn.disabled=true;toast('جارٍ تجهيز الكشف…');
   try{
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
     try{await Promise.all([document.fonts.load('400 14px "Readex Pro"'),document.fonts.load('700 14px "Readex Pro"'),document.fonts.load('600 14px "Readex Pro"')])}catch(e){}
     const s=state.settings,sched=computeSchedule(state),N=monthsCount(s),n=new Date();
     const cols=['#E7A596','#B4A4D4','#86A9DA','#E4BD62','#7DB88A'];
     const dt=`${n.getDate()} ${MONTHS[n.getMonth()]} ${n.getFullYear()}`;
     const a=monthPos(s,0),b=monthPos(s,N-1),yrs=N%12===0?(N===12?'سنة':N===24?'سنتان':`${N/12} سنوات`):`${N} شهرًا`;
-    const W=794,H=1123,M=30,BR='#8A7565';
+    const W=794,H=1118,M=30,BR='#8A7565';
     const note=(m,p)=>(notes[monthKey(s,m.i)+'|'+p.id]||'').trim();
     const mkCss=d=>`.pg{width:${W}px;height:${H}px;box-sizing:border-box;padding:${M}px;background:#fff;color:#2A1D15;font-family:'Readex Pro','Cairo',sans-serif;direction:rtl;position:relative;overflow:hidden}.pg *{box-sizing:border-box}.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #5B3A29;padding-bottom:8px}.hd h1{margin:0;font-size:21px;font-weight:700;color:#5B3A29}.hd p{margin:3px 0 0;font-size:11.5px;color:#6B5A4E}.hd .dt{text-align:left;font-size:11px;color:#6B5A4E;line-height:1.6}.sm{display:flex;gap:8px;margin:8px 0 8px}.sm div{flex:1;background:#F6F1E7;border:1px solid ${BR};border-radius:6px;padding:4px 8px;font-size:10.5px;color:#6B5A4E}.sm b{display:block;font-size:12.5px;color:#2A1D15;font-weight:600}table{width:100%;border-collapse:collapse;font-size:${d.fs}px;border:1.5px solid #3B2418}th{background:#5B3A29;color:#fff;font-weight:600;padding:${d.pad}px 6px;text-align:center;border:1px solid #3B2418}td{padding:${d.pad}px 6px;border:1px solid ${BR};vertical-align:middle;line-height:1.5}td.c{text-align:center}tr.gs td{border-top:2px solid #3B2418}.nt{color:#4A3a2e;font-size:${d.fs-1}px}.rc{display:inline-block;white-space:nowrap;margin-inline-end:10px}.rc+.rc{border-inline-start:1px solid ${BR};padding-inline-start:10px}.rc b{font-weight:600}.am{font-weight:700;color:#12683F}.ft{position:absolute;bottom:12px;left:${M}px;right:${M}px;display:flex;justify-content:space-between;font-size:10px;color:#8A7A6E;border-top:1px solid #D8CDBB;padding-top:5px}`;
     const head=`<tr><th style="width:42px">الدور</th><th style="width:48px">السنة</th><th style="width:70px">الشهر</th><th>المستلم والمبلغ</th><th style="width:190px">ملاحظات</th></tr>`;
@@ -863,17 +933,19 @@ async function makePdf(btn){
       for(const d of dens){if(chunks.every((c,k)=>fits(build(c,k,chunks.length,d)))){plan={chunks,d};break}}
     }
     if(!plan){const d=dens[dens.length-1];plan={chunks:groups.map(g=>[g]),d}}
-    const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-    for(let k=0;k<plan.chunks.length;k++){
-      const pg=build(plan.chunks[k],k,plan.chunks.length,plan.d);stage.appendChild(pg);
-      const cv=await html2canvas(pg,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false});
-      if(k)doc.addPage();doc.addImage(cv.toDataURL('image/jpeg',.92),'JPEG',0,0,210,297);
-      pg.remove();
-    }
     stage.remove();
-    doc.save(`كشف-${s.name.replace(/[\\/:*?"<>|]/g,'')}-${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}.pdf`);
-    toast('تم تنزيل الكشف');
-  }catch(e){console.error(e);toast('تعذّر إنشاء الملف. تحقق من الاتصال وأعد المحاولة.')}
+    const old=document.getElementById('printroot');if(old)old.remove();
+    const root=document.createElement('div');root.id='printroot';
+    plan.chunks.forEach((c,k)=>root.appendChild(build(c,k,plan.chunks.length,plan.d)));
+    document.body.appendChild(root);
+    const title0=document.title;document.title=`كشف ${s.name.replace(/[\\/:*?"<>|]/g,'')} ${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+    document.body.classList.add('printing');
+    const done=()=>{document.body.classList.remove('printing');document.title=title0;root.remove();window.removeEventListener('afterprint',done)};
+    window.addEventListener('afterprint',done);
+    toast('في نافذة الطباعة اختر «حفظ كـ PDF» (Save as PDF)');
+    await new Promise(r=>setTimeout(r,350));
+    window.print();
+  }catch(e){console.error(e);toast('تعذّر إنشاء الكشف. أعد المحاولة.')}
   finally{pdfBusy=false;if(btn)btn.disabled=false}
 }
 let pdfBusy=false;
@@ -892,6 +964,7 @@ async function afterAuth(){
   try{notes=await rpc('jamiya_notes_get',{p_u:creds.u,p_p:creds.p})||{}}catch(e){notes={}}
   if(can('users')){try{remoteUsers=await rpc('jamiya_users2',{p_u:creds.u,p_p:creds.p})||[]}catch(e){remoteUsers=[]}}
   if(can('members')||can('pay')){try{phones=await rpc('jamiya_phones',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
+  if(can('members')||can('pay')){try{devices=await rpc('jamiya_devices_list',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
   if(can('notify')){await loadNotif()}
   if(can('pay')){try{pushSubs=await rpc('jamiya_push_subs',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
 }
@@ -921,6 +994,8 @@ async function doLogin(){
     creds={u,p};user=u;perms=me.perms||[];loginErr='';
     try{localStorage.setItem('jamiya-auth',JSON.stringify({u,p}))}catch(x){}
     await afterAuth();
+    const raw=await Storage.load();if(raw)state=normalize(raw)||state;
+    await Promise.all([loadPaid(),loadDeliv()]);cursor=clampIdx(todayIdx());
     tab=firstTab();view='admin';render();
   }catch(x){fail('تعذّر الاتصال بقاعدة البيانات، حاول مرة أخرى.')}
 }
@@ -969,6 +1044,11 @@ const tagsInner=(m,o)=>{const a=inRange(m.months);return a.length?a.map(k=>`<lab
 const tagsHTML=(m,o)=>`<div class="tags amts" data-tags="${o}">${tagsInner(m,o)}</div>`;
 const asumTxt=m=>{const v=amtSum(m);return v>0?' · '+fmt(v):''};
 const fmtPh=p=>{p=String(p||'');return p.startsWith('968')&&p.length===11?'+968 '+p.slice(3,7)+' '+p.slice(7):'+'+p};
+function devRow(id){
+  if(!REMOTE||!can('members'))return'';
+  const b=devices[id],cf=devConf===id;
+  return`<div class="devrow">${b?`<span class="pill gold">${ic('phone')}مربوط بجهاز</span><button class="btn sm ${cf?'dangerfill':'danger'}" data-act="devrel" data-id="${id}">${cf?'اضغط مرة أخرى للتأكيد':'إلغاء ربط الجهاز'}</button>`:'<span class="none" style="font-size:12px">لم يُربط جهاز بعد</span>'}</div>`;
+}
 function phoneRow(id){const p=phones[id];
   return`<div class="mph">${ic('phone')}${p?`<span>${fmtPh(p)}</span><a class="wa" href="https://wa.me/${p}" data-wa="${p}" target="_blank" rel="noopener noreferrer" aria-label="فتح محادثة واتساب">${ic('wa')}واتساب</a>`:'<span style="direction:rtl;font-weight:500">لا يوجد رقم</span>'}</div>`}
 async function setPhone(id,v){
@@ -983,7 +1063,7 @@ function memberRow(m,i){
   return`<div class="mem ${i%2===0?'z1':'z2'}"><div class="mem-top"><span class="idx">${i+1}</span>
    <input class="in name" data-f="name" data-id="${m.id}" value="${esc(m.name)}" aria-label="اسم العضو">
    <div class="acts"><button class="ib mtg" data-act="tg-mem" data-id="${m.id}" aria-expanded="${om}" aria-label="${om?'طي بيانات العضو':'عرض بيانات العضو'}">${ic('down')}</button><button class="btn sm ${del?'dangerfill':'danger'}" data-act="del" data-id="${m.id}" aria-label="حذف">${ic('trash')}${del?'تأكيد الحذف':''}</button></div></div>
-   ${REMOTE?phoneRow(m.id):''}
+   ${REMOTE?phoneRow(m.id)+devRow(m.id):''}
    ${om?`<div class="mem-bot">${REMOTE&&can('members')?`<div class="fld pf"><span>رقم الهاتف</span><div class="phrow"><input class="in" dir="ltr" inputmode="tel" data-ph="${m.id}" value="${esc(phLocal(phones[m.id]))}" placeholder="9XXXXXXX"></div></div>`:''}<label class="fld amt"><span>المبلغ الشهري</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-f="monthly" data-id="${m.id}" value="${toInt(m.monthly)}"></label>
    <div class="tot"><span>إجمالي المستحق</span><b data-tot="${m.id}">${money(toInt(m.monthly)*N)}</b></div>
    <label class="fld pf"><span>موعد الاستلام</span>${prefSel(m.pref,`data-f="pref" data-id="${m.id}"`)}</label>
@@ -1184,7 +1264,7 @@ function pushPanelHTML(){
   if(pushOn()&&mine)inner=`<div class="row"><span class="pill gold">${ic('bell')}التنبيهات مفعّلة لـ ${esc(mine.name)}</span><button class="btn sm danger" data-act="pushoff">إيقاف التنبيهات</button>${cl}</div>`;
   else if(isIOS&&!isStandalone)inner=`${iosSteps()}<div class="row">${cl}</div>`;
   else if(!pushOK)inner=`<div>هذا المتصفح لا يدعم التنبيهات. جرّب Chrome أو Safari الحديث.</div><div class="row">${cl}</div>`;
-  else inner=`<div class="lbl">اختر اسمك ليصلك التذكير بموعد الدفع:</div><div class="row"><select id="pushm"><option value="">— اختر اسمك —</option>${state.members.filter(m=>toInt(m.monthly)>0).map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')}</select><button class="btn pri sm" data-act="pushon">${ic('bell')}تفعيل</button>${cl}</div><div class="err">${esc(pushMsg)}</div>`;
+  else inner=`<div class="lbl">فعّل التنبيهات ليصلك تذكير الدفع ودورك في الاستلام:</div><div class="row"><button class="btn pri sm" data-act="pushon">${ic('bell')}تفعيل التنبيهات${devMember&&find(devMember)?' لـ '+esc(find(devMember).name.trim().split(/\s+/)[0]):''}</button>${cl}</div><div class="err">${esc(pushMsg)}</div>`;
   return`<section class="card ppanel" style="margin-top:12px">${inner}</section>`;
 }
 function pushUI(){const h=document.querySelector('header.top');if(h)h.outerHTML=headerHTML();if(view==='home')renderHome()}
@@ -1259,7 +1339,7 @@ async function remind(memberId){
 }
 const b64u=t=>{const p='='.repeat((4-t.length%4)%4),r=atob((t+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(r,c=>c.charCodeAt(0))};
 async function pushEnable(idArg,sayArg){
-  const sel=$('#pushm'),id=idArg||(sel?sel.value:'');
+  const sel=$('#pushm'),id=idArg||devMember||(sel?sel.value:'');
   const say=sayArg||(m=>{pushMsg=m;const e=document.querySelector('.ppanel .err');if(e)e.textContent=m});
   if(!id)return say('اختر اسمك أولًا.');
   try{
@@ -1271,7 +1351,7 @@ async function pushEnable(idArg,sayArg){
     let sub=await reg.pushManager.getSubscription();
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(key)});
     const j=sub.toJSON();
-    await rpc('jamiya_push_subscribe',{p_member:id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth});
+    await rpc('jamiya_push_subscribe2',{p_member:id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_token:devTok});
     pushMine={m:id};try{localStorage.setItem('jamiya-push',JSON.stringify(pushMine))}catch(e){}
     pushOpen=false;pushMsg='';pushUI();toast('تم تفعيل التنبيهات');return true;
   }catch(e){say('تعذّر التفعيل. تأكد من الاتصال وحاول مرة أخرى.')}
@@ -1321,7 +1401,7 @@ function click(e){
     case'go-login':loginErr='';view='login';render();break;
     case'go-home':view='home';render();break;
     case'go-admin':view='admin';render();break;
-    case'logout':user=null;creds=null;notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
+    case'logout':user=null;creds=null;if(!devMember){state=defaultData();phones={};devices={};remoteUsers=[]}notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
     case'login':doLogin();break;
     case'prev':go(-1);break;
     case'next':go(1);break;
@@ -1379,6 +1459,9 @@ function click(e){
     case'tg-mem':openMem.has(id)?openMem.delete(id):openMem.add(id);renderMembers();break;
     case'install':installApp();break;
     case'ntsend':ntSend();break;
+    case'gate-go':gateGo();break;
+    case'unlink':unlinkDevice();break;
+    case'devrel':devRelease(b.dataset.id);break;
     case'onb-go':onbGo();break;
     case'onb-push':onbPush();break;
     case'onb-skip':onbClose();break;
@@ -1525,17 +1608,23 @@ function endSplash(force){
 (async function boot(){
   let th='light';try{th=localStorage.getItem('jamiya-theme')||'light'}catch(e){}
   applyTheme(th==='dark'?'dark':'light');
-  state=normalize(await Storage.load())||defaultData();
-  if(REMOTE)await Promise.all([loadPaid(),loadDeliv(),restoreSession()]);else paid=state.pay||{};
+  state=defaultData();
+  if(REMOTE)await restoreSession();
+  const raw=await Storage.load();
+  if(REMOTE&&!user){if(raw){try{devMember=await rpc('jamiya_device_check',{p_token:devTok})||null}catch(e){}}else devMember=null}
+  state=normalize(raw)||defaultData();
+  if(REMOTE){if(!gated())await Promise.all([loadPaid(),loadDeliv()])}else paid=state.pay||{};
   draft=newDraft();cursor=clampIdx(todayIdx());
-  try{onb=REMOTE&&!user&&!loadFailed&&!pushMine&&!localStorage.getItem('jamiya-onb')&&state.members.length>0}catch(e){}
+  try{onbM=devMember;onb=REMOTE&&!user&&!!devMember&&!!find(devMember)&&!pushMine&&!localStorage.getItem('jamiya-onb')}catch(e){}
   render();
   window.__ready=true;endSplash();
   loadMyNotes();
   if(REMOTE)document.addEventListener('visibilitychange',async()=>{
-    if(document.visibilityState!=='visible'||view==='login')return;
+    if(document.visibilityState!=='visible'||view==='login'||gated())return;
     if(user){await loadPaid();await loadDeliv();refreshPay();return}
-    await loadPaid();await loadDeliv();const d=normalize(await Storage.load());if(d){state=d;if(view==='home')renderHome()}else if(view==='home')renderHome()
+    const raw=await Storage.load();
+    if(!raw){if(!loadFailed&&devMember)releaseLocal();return}
+    await loadPaid();await loadDeliv();const d=normalize(raw);if(d){state=d;if(view==='home')renderHome()}
   });
 })();
 </script>

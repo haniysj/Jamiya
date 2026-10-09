@@ -836,29 +836,36 @@ async function makePdf(btn){
     const cols=['#E7A596','#B4A4D4','#86A9DA','#E4BD62','#7DB88A'];
     const dt=`${n.getDate()} ${MONTHS[n.getMonth()]} ${n.getFullYear()}`;
     const a=monthPos(s,0),b=monthPos(s,N-1),yrs=N%12===0?(N===12?'سنة':N===24?'سنتان':`${N/12} سنوات`):`${N} شهرًا`;
-    const W=794,H=1123,M=34,css=`.pg{width:${W}px;height:${H}px;box-sizing:border-box;padding:${M}px;background:#fff;color:#2A1D15;font-family:'Readex Pro','Cairo',sans-serif;direction:rtl;position:relative;overflow:hidden}.pg *{box-sizing:border-box}.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #5B3A29;padding-bottom:10px}.hd h1{margin:0;font-size:22px;font-weight:700;color:#5B3A29}.hd p{margin:3px 0 0;font-size:12px;color:#6B5A4E}.hd .dt{text-align:left;font-size:11.5px;color:#6B5A4E;line-height:1.7}.sm{display:flex;gap:8px;margin:10px 0 8px}.sm div{flex:1;background:#F6F1E7;border:1px solid #E0D6C2;border-radius:8px;padding:5px 8px;font-size:11px;color:#6B5A4E}.sm b{display:block;font-size:13px;color:#2A1D15;font-weight:600}table{width:100%;border-collapse:collapse;font-size:11.5px}th{background:#5B3A29;color:#fff;font-weight:600;padding:6px 6px;text-align:right;font-size:11.5px}td{padding:5px 6px;border-bottom:1px solid #E0D6C2;vertical-align:middle;line-height:1.55}td.c,th.c{text-align:center}.nt{color:#5A4637;font-size:10.5px}.ft{position:absolute;bottom:14px;left:${M}px;right:${M}px;display:flex;justify-content:space-between;font-size:10px;color:#8A7A6E;border-top:1px solid #E0D6C2;padding-top:6px}.am{font-weight:600;white-space:nowrap}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-start:6px}`;
-    const note=(m,p)=>{const t=(notes[monthKey(s,m.i)+'|'+p.id]||'').trim();return t?esc(t):'—'};
-    const body=m=>m.payments.map((p,j)=>{
-      const c=cols[Math.floor(m.i/6)%5],bg=c+'44';
-      const first=j===0?`<td class="c" rowspan="${m.payments.length}" style="background:${bg};border-right:5px solid ${c};font-weight:700">${m.i+1}</td><td rowspan="${m.payments.length}" style="background:${bg};font-weight:600">${MONTHS[m.m]}</td><td class="c" rowspan="${m.payments.length}" style="background:${bg}">${m.y}</td>`:'';
-      return`<tr>${first}<td style="background:${bg}">${esc(p.name)}</td><td class="am" style="background:${bg}">${fmt(p.amount)} ر.ع</td><td class="nt" style="background:${bg}">${note(m,p)}</td></tr>`}).join('');
-    const head=`<tr><th class="c" style="width:44px">الدور</th><th style="width:78px">الشهر</th><th class="c" style="width:50px">السنة</th><th style="width:140px">المستلم</th><th style="width:96px">المبلغ</th><th>ملاحظات</th></tr>`;
+    const W=794,H=1123,M=30,BR='#8A7565';
+    const note=(m,p)=>(notes[monthKey(s,m.i)+'|'+p.id]||'').trim();
+    const mkCss=d=>`.pg{width:${W}px;height:${H}px;box-sizing:border-box;padding:${M}px;background:#fff;color:#2A1D15;font-family:'Readex Pro','Cairo',sans-serif;direction:rtl;position:relative;overflow:hidden}.pg *{box-sizing:border-box}.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #5B3A29;padding-bottom:8px}.hd h1{margin:0;font-size:21px;font-weight:700;color:#5B3A29}.hd p{margin:3px 0 0;font-size:11.5px;color:#6B5A4E}.hd .dt{text-align:left;font-size:11px;color:#6B5A4E;line-height:1.6}.sm{display:flex;gap:8px;margin:8px 0 8px}.sm div{flex:1;background:#F6F1E7;border:1px solid ${BR};border-radius:6px;padding:4px 8px;font-size:10.5px;color:#6B5A4E}.sm b{display:block;font-size:12.5px;color:#2A1D15;font-weight:600}table{width:100%;border-collapse:collapse;font-size:${d.fs}px;border:1.5px solid #3B2418}th{background:#5B3A29;color:#fff;font-weight:600;padding:${d.pad}px 6px;text-align:center;border:1px solid #3B2418}td{padding:${d.pad}px 6px;border:1px solid ${BR};vertical-align:middle;line-height:1.5}td.c{text-align:center}tr.gs td{border-top:2px solid #3B2418}.nt{color:#4A3a2e;font-size:${d.fs-1}px}.rc{display:inline-block;white-space:nowrap;margin-inline-end:10px}.rc+.rc{border-inline-start:1px solid ${BR};padding-inline-start:10px}.rc b{font-weight:600}.am{font-weight:600}.ft{position:absolute;bottom:12px;left:${M}px;right:${M}px;display:flex;justify-content:space-between;font-size:10px;color:#8A7A6E;border-top:1px solid #D8CDBB;padding-top:5px}`;
+    const head=`<tr><th style="width:42px">الدور</th><th style="width:48px">السنة</th><th style="width:70px">الشهر</th><th>المستلم والمبلغ</th><th style="width:190px">ملاحظات</th></tr>`;
+    const gbody=gs=>{ // صفحة: عدة مجموعات ألوان (٦ أشهر لكل مجموعة)، والسنة خلية مدمجة تمتد عبر المجموعات
+      const ms=[].concat(...gs),yc={},done={};ms.forEach(m=>yc[m.y]=(yc[m.y]||0)+1);
+      return`<tbody>`+ms.map(m=>{
+        const c=cols[Math.floor(m.i/6)%5],bg=c+'48';
+        const ycell=done[m.y]?'':(done[m.y]=1,`<td class="c" rowspan="${yc[m.y]}" style="background:#F6F1E7;font-weight:700;border-top:2px solid #3B2418;border-bottom:2px solid #3B2418">${m.y}</td>`);
+        const who=m.payments.map(p=>`<span class="rc"><b>${esc(p.name)}</b> <span class="am">${fmt(p.amount)} ر.ع</span></span>`).join('');
+        const nts=m.payments.map(p=>({p,t:note(m,p)})).filter(x=>x.t);
+        const nt=nts.length?nts.map(x=>(m.payments.length>1?`<b>${esc(x.p.name.split(' ')[0])}:</b> `:'')+esc(x.t)).join('<br>'):'—';
+        return`<tr${m.i%6===0?' class="gs"':''}><td class="c" style="background:${bg};font-weight:700">${m.i+1}</td>${ycell}<td style="background:${bg};font-weight:600">${MONTHS[m.m]}</td><td style="background:${bg}">${who}</td><td class="nt" style="background:${bg}">${nt}</td></tr>`}).join('')+`</tbody>`;
+    };
     const hdr=first=>`<div class="hd"><div><h1>${esc(s.name)}</h1><p>كشف تفصيلي لمسار الجمعية · ${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y}</p></div><div class="dt">تاريخ تنزيل الكشف<br><b>${dt}</b></div></div>`+(first?`<div class="sm"><div>المدة<b>${yrs}${N%12===0?` · ${N} شهرًا`:''}</b></div><div>الوعاء الشهري<b>${fmt(sched.pot)} ر.ع</b></div><div>عدد الأعضاء<b>${state.members.length}</b></div><div>الإجمالي<b>${fmt(sched.total)} ر.ع</b></div></div>`:'');
-    const stage=document.createElement('div');stage.style.cssText='position:fixed;left:-10000px;top:0;z-index:-1';stage.innerHTML=`<style>${css}</style>`;document.body.appendChild(stage);
-    // قياس
-    const mt=document.createElement('div');mt.className='pg';mt.style.height='auto';mt.innerHTML=`<table><thead>${head}</thead>${sched.months.map(m=>`<tbody data-i="${m.i}">${body(m)}</tbody>`).join('')}</table>`;stage.appendChild(mt);
-    const hs=[...mt.querySelectorAll('tbody')].map(t=>t.getBoundingClientRect().height),thH=mt.querySelector('thead').getBoundingClientRect().height;
-    const h1=(()=>{const e=document.createElement('div');e.className='pg';e.style.height='auto';e.innerHTML=hdr(true);stage.appendChild(e);const v=e.getBoundingClientRect().height-2*M;e.remove();return v})();
-    const h2=(()=>{const e=document.createElement('div');e.className='pg';e.style.height='auto';e.innerHTML=hdr(false);stage.appendChild(e);const v=e.getBoundingClientRect().height-2*M;e.remove();return v})();
-    mt.remove();
-    const pages=[];let cur=[],used=0,cap=H-2*M-h1-thH-40;
-    sched.months.forEach((m,i)=>{if(used+hs[i]>cap&&cur.length){pages.push(cur);cur=[];used=0;cap=H-2*M-h2-thH-40}cur.push(m);used+=hs[i]});
-    if(cur.length)pages.push(cur);
+    const groups=[];for(let i=0;i<N;i+=6)groups.push(sched.months.slice(i,i+6));
+    const stage=document.createElement('div');stage.style.cssText='position:fixed;left:-10000px;top:0;z-index:-1';document.body.appendChild(stage);
+    const build=(pgGroups,k,tot,d)=>{const pg=document.createElement('div');pg.className='pg';pg.innerHTML=`<style>${mkCss(d)}</style>`+hdr(k===0)+`<table><thead>${head}</thead>${gbody(pgGroups)}</table><div class="ft"><span>إعداد: هاني الغطريفي</span><span>صفحة ${k+1} من ${tot}</span></div>`;return pg};
+    const fits=pg=>{pg.style.height='auto';stage.appendChild(pg);const t=pg.querySelector('table'),f=pg.querySelector('.ft');f.style.position='static';const h=pg.getBoundingClientRect().height;pg.remove();f.style.position='';pg.style.height=H+'px';return h<=H};
+    const dens=[{fs:11.5,pad:5},{fs:11,pad:4},{fs:10.5,pad:3},{fs:10,pad:2}];
+    let plan=null;
+    for(let np=1;np<=Math.max(2,groups.length)&&!plan;np++){
+      const per=Math.ceil(groups.length/np),chunks=[];for(let i=0;i<groups.length;i+=per)chunks.push(groups.slice(i,i+per));
+      if(chunks.length!==np&&np>1)continue;
+      for(const d of dens){if(chunks.every((c,k)=>fits(build(c,k,chunks.length,d)))){plan={chunks,d};break}}
+    }
+    if(!plan){const d=dens[dens.length-1];plan={chunks:groups.map(g=>[g]),d}}
     const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
-    for(let k=0;k<pages.length;k++){
-      const pg=document.createElement('div');pg.className='pg';
-      pg.innerHTML=hdr(k===0)+`<table><thead>${head}</thead>${pages[k].map(m=>`<tbody>${body(m)}</tbody>`).join('')}</table><div class="ft"><span>إعداد: هاني الغطريفي</span><span>صفحة ${k+1} من ${pages.length}</span></div>`;
-      stage.appendChild(pg);
+    for(let k=0;k<plan.chunks.length;k++){
+      const pg=build(plan.chunks[k],k,plan.chunks.length,plan.d);stage.appendChild(pg);
       const cv=await html2canvas(pg,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false});
       if(k)doc.addPage();doc.addImage(cv.toDataURL('image/jpeg',.92),'JPEG',0,0,210,297);
       pg.remove();

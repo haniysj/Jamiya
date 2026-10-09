@@ -47,7 +47,7 @@ button{font-family:inherit;cursor:pointer}
 .mark{width:46px;height:46px;border-radius:13px;background:var(--primary);display:grid;place-items:center;flex:none}
 .mark svg{width:30px;height:16px;fill:var(--gold)}
 .brand h1{margin:0;font-size:21px;font-weight:800;line-height:1.2;color:var(--primary-ink)}
-.brand p{margin:0;color:var(--muted);font-size:12.5px}
+.brand p{margin:0;color:var(--muted);font-size:12.5px}.wlc{margin-top:5px;font-size:13px;font-weight:700;color:var(--gold-ink);background:var(--gold-soft);border-radius:999px;padding:1px 10px;width:max-content;max-width:100%}.wlc b{font-weight:800}
 .nav{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .navrow{display:flex;gap:8px;justify-content:flex-end}
 .theme .tl{display:none}
@@ -58,7 +58,7 @@ button{font-family:inherit;cursor:pointer}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:14px}
 .pill{display:inline-block;border-radius:999px;padding:1px 10px;font-size:12px;font-weight:700;background:var(--primary-soft);color:var(--primary-ink);white-space:nowrap}
 .schst{font-size:13px;line-height:1.7;padding:8px 12px;border-radius:12px;margin:2px 0 10px;background:var(--ok-soft);color:var(--ok)}.schst.warn{background:var(--rust-soft);color:var(--rust)}
-.nmk{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none;vertical-align:middle}.nmk::before{content:'';width:7px;height:7px;border-radius:50%;background:#D64545;box-shadow:0 0 0 2px rgba(214,69,69,.18)}.nmk.add::before{background:transparent;border:1.5px dashed var(--muted);box-shadow:none;width:8px;height:8px;box-sizing:border-box}.nmk:focus-visible{outline:2px solid var(--primary);border-radius:50%}
+.nmk{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none;vertical-align:middle}.nmk::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px rgba(201,150,40,.28)}.dck{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--ok);color:#fff;flex:none}.dck svg{width:10px;height:10px;stroke-width:3.2}.nmk.add::before{background:transparent;border:1.5px dashed var(--muted);box-shadow:none;width:8px;height:8px;box-sizing:border-box}.nmk:focus-visible{outline:2px solid var(--primary);border-radius:50%}
 .npop .xb{position:absolute;top:10px;inset-inline-end:10px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}.npop .onbc{position:relative;padding-top:44px}
 .npop{position:fixed;inset:0;z-index:95;background:rgba(30,20,14,.5);display:flex;align-items:center;justify-content:center;padding:16px}.npop .onbc{max-width:380px;gap:10px}.npop h3{margin:0;font-size:15px}.npop .nt{white-space:pre-wrap;line-height:1.8;background:var(--gold-soft);color:var(--gold-ink);border-radius:12px;padding:10px 12px;font-size:14px}.npop textarea{min-height:96px}
 .dlv{display:flex;flex-direction:column;gap:6px;align-items:stretch}.dlvb{justify-content:center;white-space:normal;text-align:center;line-height:1.5}.btn.okb{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
@@ -109,6 +109,7 @@ body{min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-
 .phrow{display:flex;gap:6px;align-items:center}.phrow .in{flex:1;min-width:0}.phrow .ib{flex:none}
 .ios{display:flex;flex-direction:column;gap:10px;text-align:right}
 .ios ol{margin:0;padding:0 18px 0 0;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.kic{display:inline-flex;align-items:center;gap:5px;background:var(--gold-soft);color:var(--gold-ink);border:1.5px solid var(--gold);border-radius:9px;padding:1px 8px;margin-inline:2px;font-size:13px;white-space:nowrap}.kic svg{width:20px;height:20px;vertical-align:0!important;margin:0!important}.kic b{font-weight:800}
 .ios li svg{width:18px;height:18px;vertical-align:-4px;margin-inline:2px}
 .stat.inl{flex:none;flex-direction:row;align-items:center;gap:6px;padding:2px 10px;font-size:13px}.stat.inl span{font-size:13px}
 .ord{display:flex;align-items:center;gap:6px;margin-inline-start:auto;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
@@ -662,11 +663,11 @@ function headerHTML(){
   else row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button>`;
   try{localStorage.setItem('jamiya-name',s.name)}catch(e){}
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
-  <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p></div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
+  <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p>${(devMember&&find(devMember))?`<div class="wlc">أهلًا بك، <b>${esc(find(devMember).name)}</b> 👋</div>`:''}</div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
 }
 const iosSteps=()=>`<div class="ios"><div><b>تنبيهات الآيفون تعمل فقط من أيقونة التطبيق على الشاشة الرئيسية</b> (شرط من أبل، ويلزم iOS 16.4 أو أحدث). تحتاج هذه الخطوات مرة واحدة:</div>
-  <ol><li>افتح الموقع في <b>Safari</b> (وليس داخل تطبيق آخر)، ثم اضغط زر المشاركة ${ic('share')} في شريط Safari نفسه.</li>
-  <li>اختر <b>«إضافة إلى الشاشة الرئيسية»</b> ${ic('plussq')} ثم «إضافة».</li>
+  <ol><li>افتح الموقع في <b>Safari</b> (وليس داخل تطبيق آخر)، ثم اضغط زر المشاركة <span class="kic">${ic('share')}<b>مشاركة</b></span> في شريط Safari نفسه.</li>
+  <li>اختر <span class="kic">${ic('plussq')}<b>إضافة إلى الشاشة الرئيسية</b></span> ثم «إضافة».</li>
   <li>افتح <b>الجمعية</b> من أيقونتها على الشاشة الرئيسية (وليس من Safari).</li>
   <li>قبل فتح التطبيق: من Safari اضغط رمز الهاتف بجانب «التنبيهات» مرتين لإلغاء ارتباط المتصفح برقمك (لأن التطبيق يُعدّ جهازًا مستقلًا).</li><li>في التطبيق أدخل رقمك، ثم اضغط «تفعيل التنبيهات» واسمح بها.</li></ol></div>`;
 let onbM=null,onbIos=false,deferredInstall=null;
@@ -687,7 +688,7 @@ function gateHTML(){
   if(isIOS&&!isStandalone)return`<div class="gate"><div class="onbc">${mk}
   <h2>${esc(nm||'الجمعية')}</h2>
   <p><b>ثبّت التطبيق أولًا، ثم أدخل رقمك من داخله</b><br>في الآيفون يُعدّ المتصفح والتطبيق جهازين منفصلين، لذلك يُربط رقمك من التطبيق مباشرة.</p>
-  <div class="ios"><ol><li>افتح هذه الصفحة في <b>Safari</b>.</li><li>اضغط زر المشاركة <b>⎋</b> أسفل الشاشة.</li><li>اختر <b>إضافة إلى الشاشة الرئيسية</b> ثم <b>إضافة</b>.</li><li>افتح <b>الجمعية</b> من أيقونتها على الشاشة الرئيسية وأدخل رقم هاتفك.</li></ol></div>
+  <div class="ios"><ol><li>افتح هذه الصفحة في <b>Safari</b>.</li><li>اضغط زر المشاركة <span class="kic">${ic('share')}<b>مشاركة</b></span> في شريط Safari (أسفل الشاشة).</li><li>مرّر القائمة واختر <span class="kic">${ic('plussq')}<b>إضافة إلى الشاشة الرئيسية</b></span> ثم اضغط <b>إضافة</b>.</li><li>افتح <b>الجمعية</b> من أيقونتها على الشاشة الرئيسية وأدخل رقم هاتفك.</li></ol></div>
   </div><button class="alink" data-act="go-login">دخول الإدارة</button><div class="foot">إعداد: هاني الغطريفي</div></div>`;
   return`<div class="gate"><div class="onbc">${mk}
   <h2>${esc(nm||'الجمعية')}</h2>
@@ -832,9 +833,9 @@ function noteHTML(){
   return`<div class="npop" data-act="note-bg" role="dialog" aria-modal="true"><div class="onbc">
    <button type="button" class="xb" data-act="note-close" aria-label="إغلاق">×</button>
    <h3>${esc(m?m.name:'')} · ${mLabel(k)}</h3>
-   ${ed?`<textarea class="in" id="ntxt" maxlength="500" placeholder="اكتب الملاحظة (تظهر للمستخدمين المسجلين ولصاحب الدور فقط)">${esc(txt)}</textarea>
+   ${ed?`<textarea class="in" id="ntxt" dir="rtl" style="text-align:right" maxlength="500" placeholder="اكتب الملاحظة (تظهر للمستخدمين المسجلين ولصاحب الدور فقط)">${esc(txt)}</textarea>
    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="note-save">حفظ</button>${txt?`<button class="btn danger" data-act="note-del">حذف</button>`:''}</div>`
-   :`<div class="nt">${esc(txt)}</div>`}
+   :`<div class="nt" dir="rtl" style="text-align:right">${esc(txt)}</div>`}
   </div></div>`;
 }
 function showNote(){let b=$('#notebox');if(!b){b=document.createElement('div');b.id='notebox';b.addEventListener('click',click);document.body.appendChild(b)}b.innerHTML=noteHTML();if(noteSel&&creds&&can('members')&&noteEdit){const t=$('#ntxt');if(t&&!t.value)try{t.focus()}catch(x){}}}
@@ -891,7 +892,7 @@ function renderHome(){
   const showM=openM||q;
   $('#monsec').innerHTML=`<button class="coll" data-act="tg-m" aria-expanded="${showM}">${ic('table')}الجدول الشهري الكامل<small>${q?rows.length+' شهرًا مطابقًا':N+' شهرًا'}</small><span class="sp"></span>${ic('down','cv')}</button>`+
    (showM&&REMOTE&&creds&&can('members')?`<div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn sm${noteEdit?' pri':''}" data-act="tg-ne">${ic('note')}${noteEdit?'إنهاء تعديل الملاحظات':'إضافة/تعديل ملاحظات على المبالغ'}</button><button class="btn sm pdfb" data-act="pdf" aria-label="تنزيل كشف الجمعية PDF" title="تنزيل كشف الجمعية PDF"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 2h14l7 7v19a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#D32F2F"/><path d="M21 2v5a2 2 0 0 0 2 2h5z" fill="#FF8A80"/><text x="16.5" y="24" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="9.5" fill="#fff">PDF</text></svg></button></div>`:'')+
-   (showM?`<div class="mrows">${rows.length?rows.map(m=>`<div class="mrow b${Math.floor(m.i/6)%5}${m.i%6===0&&m.i?' bs':''}${m.i===ti?' now':''}"><div class="ml" data-act="goto" data-i="${m.i}" title="عرض هذا الشهر"><b>${MONTHS[m.m]}</b><small>${m.y}</small>${m.i===ti?'<i>الآن</i>':''}</div><div class="chips">${m.payments.map(p=>`<span class="chip${q&&hitName(p.name)?' hit':''}" data-act="who" data-n="${esc(p.name)}" title="عرض كل دفعات ${esc(p.name)}"><span class="cn">${esc(p.name)}</span>${money(p.amount)}${noteMark(m.i,p.id)}</span>`).join('')}</div></div>`).join(''):'<div class="empty-box">لا توجد نتائج مطابقة.</div>'}</div>`:'');
+   (showM?`<div class="mrows">${rows.length?rows.map(m=>`<div class="mrow b${Math.floor(m.i/6)%5}${m.i%6===0&&m.i?' bs':''}${m.i===ti?' now':''}"><div class="ml" data-act="goto" data-i="${m.i}" title="عرض هذا الشهر"><b>${MONTHS[m.m]}</b><small>${m.y}</small>${m.i===ti?'<i>الآن</i>':''}</div><div class="chips">${m.payments.map(p=>`<span class="chip${q&&hitName(p.name)?' hit':''}" data-act="who" data-n="${esc(p.name)}" title="عرض كل دفعات ${esc(p.name)}"><span class="cn">${esc(p.name)}</span>${money(p.amount)}${deliv[monthKey(state.settings,m.i)+'|'+p.id]?`<span class="dck" title="تم استلام هذا الدور">${ic('check')}</span>`:''}${noteMark(m.i,p.id)}</span>`).join('')}</div></div>`).join(''):'<div class="empty-box">لا توجد نتائج مطابقة.</div>'}</div>`:'');
   // جدول الإجماليات
   const mem=state.members.filter(m=>hitName(m.name));
   const showT=openT||q;

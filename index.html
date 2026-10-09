@@ -6,7 +6,7 @@
 :root{
   --bg:#F6F1E7;--surface:#FFFDF8;--surface2:#EFE8D8;--ink:#1D2B27;--muted:#5E6B66;--line:#E0D6C2;
   --primary:#5B3A29;--on-primary:#FFFFFF;--primary-soft:#EADFD3;--primary-ink:#5B3A29;
-  --ring:#5B3A29;--rust:#9C4A34;--rust-soft:#F5E1DA;--gold:#C89B3C;--gold-soft:#F6E9C6;--gold-ink:#7A5A12;
+  --amt:#12683F;--ring:#5B3A29;--rust:#9C4A34;--rust-soft:#F5E1DA;--gold:#C89B3C;--gold-soft:#F6E9C6;--gold-ink:#7A5A12;
   --b0:#FBE3DE;--b1:#E9E4F0;--b2:#DCE6F5;--b3:#FBF0D9;--b4:#DEEFE0;
   --p0:#E7A596;--p1:#B4A4D4;--p2:#86A9DA;--p3:#E4BD62;--p4:#7DB88A;
   --ok:#2F7D4F;--ok-soft:#DDEFE3;--chip:#FFFFFF;--hit:#FFE9A8;--shadow:0 1px 2px rgba(91,58,41,.08),0 8px 22px rgba(91,58,41,.07);
@@ -14,7 +14,7 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#1A1411;--surface:#241B16;--surface2:#30241D;--ink:#F0E8DC;--muted:#B5A596;--line:#3F3128;
   --primary:#8A5A3F;--on-primary:#FFFFFF;--primary-soft:#3A2B22;--primary-ink:#E3C3A6;
-  --ring:#F0D9B5;--rust:#E08A70;--rust-soft:#3A2420;--gold:#D9AF55;--gold-soft:#3A3320;--gold-ink:#E8C97A;
+  --amt:#7FD1A0;--ring:#F0D9B5;--rust:#E08A70;--rust-soft:#3A2420;--gold:#D9AF55;--gold-soft:#3A3320;--gold-ink:#E8C97A;
   --b0:#3A2622;--b1:#2D2939;--b2:#22303F;--b3:#3A3322;--b4:#223A2A;
   --p0:#B8705F;--p1:#8472AE;--p2:#5A80B8;--p3:#B4903C;--p4:#4E8E5E;
   --ok:#6CC48C;--ok-soft:#1F3A2A;--chip:#2C211B;--hit:#6B5714;--shadow:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}}
@@ -30,6 +30,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cairo',system-u
 .wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:14px 28px}
 .ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em;flex:none}
 .omr{display:inline-flex;align-items:center;gap:.28em;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:700}
+.tc .omr span,.mrow .omr span,.chip .omr span,.tw .omr span,.tw tbody td:not(.n):not(.none),.tw tfoot td+td,#payBox .omr span,#paysec .omr span,.whoc .omr span,.pm .omr span{color:var(--amt)}
 .omr svg{width:1.12em;height:.58em;fill:currentColor;flex:none;color:var(--rust)}
 button{font-family:inherit;cursor:pointer}
 .btn{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--primary);background:transparent;color:var(--primary-ink);border-radius:10px;padding:8px 14px;font-weight:700;font-size:13.5px;white-space:nowrap}
@@ -48,7 +49,7 @@ button{font-family:inherit;cursor:pointer}
 .brand h1{margin:0;font-size:21px;font-weight:800;line-height:1.2;color:var(--primary-ink)}
 .brand p{margin:0;color:var(--muted);font-size:12.5px}
 .nav{display:flex;flex-direction:column;gap:6px;align-items:stretch}
-.navrow{display:flex;gap:8px}
+.navrow{display:flex;gap:8px;justify-content:flex-end}
 .theme .tl{display:none}
 @media (pointer:fine) and (min-width:760px){.theme.wl{width:auto;padding:0 12px;display:inline-flex;align-items:center;gap:7px}.theme.wl .tl{display:inline;font-size:13px;font-weight:700;white-space:nowrap}}
 .theme.dg{border-color:var(--rust);color:var(--rust)}
@@ -332,11 +333,12 @@ body.enter .tc:nth-child(1){animation-delay:.3s}body.enter .tc:nth-child(2){anim
 .btn:active,.theme:active,.arrow:active,.ib:active{transform:scale(.94)}
 .pdfb{margin-right:auto;padding:5px 8px!important;border-color:#D32F2F!important}.pdfb svg{width:22px;height:22px;display:block}.pdfb[disabled]{opacity:.5}
 #printroot{display:none}
-.bellrow{display:flex;gap:6px;align-items:stretch}.bellrow .bellbtn{flex:1;width:auto;min-width:0}.theme.ulk{width:36px;height:auto;min-height:32px;border-radius:10px;flex:none}.theme.ulk svg{width:18px;height:18px}.theme.ulk.on{background:var(--rust);border-color:var(--rust);color:#fff;animation:pl 1s infinite}
+.bellrow{display:flex;gap:6px;align-items:stretch}@media(min-width:700px){.bellrow{width:max-content;max-width:100%}.bellrow .bellbtn{flex:none;padding:3px 14px}}.bellrow .bellbtn{flex:1;width:auto;min-width:0}.theme.ulk{width:36px;height:auto;min-height:32px;border-radius:10px;flex:none}.theme.ulk svg{width:18px;height:18px}.theme.ulk.on{background:var(--rust);border-color:var(--rust);color:#fff;animation:pl 1s infinite}
 .gate{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;gap:12px}
 .gate .onbc{max-width:380px}.gate .mark{margin:0 auto;width:54px;height:54px}.gate .mark svg{width:34px;height:18px}.gate h2{margin:0;text-align:center;font-size:19px;color:var(--primary-ink)}.gate p{margin:0;text-align:center;color:var(--muted);font-size:13px}
 .gate .alink{background:none;border:0;color:var(--muted);font-size:12.5px;text-decoration:underline;cursor:pointer;padding:6px;font-family:inherit}
 .gate .foot{position:static;margin-top:6px}
+.stp{display:flex;align-items:center;justify-content:center;gap:6px}.stp span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;border:2px solid var(--line);color:var(--muted)}.stp span.on{background:var(--primary);border-color:var(--primary);color:#fff}.stp i{width:34px;height:2px;background:var(--line)}
 .devrow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
 @media print{
   @page{size:A4;margin:0}
@@ -357,7 +359,7 @@ body.enter .tc:nth-child(1){animation-delay:.3s}body.enter .tc:nth-child(2){anim
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
 <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></symbol>
 <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
-<symbol id="i-aup" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol><symbol id="i-adn" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol><symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.3 2.7 6 6 6l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/></symbol><symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></symbol><symbol id="i-plussq" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></symbol><symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol><symbol id="i-contact" viewBox="0 0 24 24"><rect x="4" y="3" width="15" height="18" rx="2"/><circle cx="11.5" cy="10" r="2.6"/><path d="M7.5 17a4 4 0 0 1 8 0"/><path d="M21 8v2M21 13v2"/></symbol><symbol id="i-note" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v10l-5 5H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M15 20v-4a1 1 0 0 1 1-1h4M8 9h8M8 12.5h5"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-unlink" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M11 18.3h2"/><path d="M3.5 3.5l17 17" stroke-width="2.2"/></symbol><symbol id="i-aup" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol><symbol id="i-adn" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol><symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.3 2.7 6 6 6l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/></symbol><symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></symbol><symbol id="i-plussq" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></symbol><symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol><symbol id="i-contact" viewBox="0 0 24 24"><rect x="4" y="3" width="15" height="18" rx="2"/><circle cx="11.5" cy="10" r="2.6"/><path d="M7.5 17a4 4 0 0 1 8 0"/><path d="M21 8v2M21 13v2"/></symbol><symbol id="i-note" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v10l-5 5H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M15 20v-4a1 1 0 0 1 1-1h4M8 9h8M8 12.5h5"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
 <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -655,7 +657,7 @@ function headerHTML(){
   if(view==='home'){
     row=user?`<button class="theme pri wl" data-act="go-admin" aria-label="لوحة التحكم" title="لوحة التحكم">${ic('gear')}<span class="tl">لوحة التحكم</span></button><button class="theme dg wl" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}<span class="tl">تسجيل الخروج</span></button>`
       :`<button class="theme pri wl" data-act="go-login" aria-label="دخول الإدارة" title="دخول الإدارة">${ic('lock')}<span class="tl">دخول الإدارة</span></button>`;
-    if(REMOTE)bell=`<div class="bellrow"><button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk">${ic('check')}<small>${esc(((find(pushMine.m)||{}).name||'').trim().split(/\s+/)[0])}</small></span>`:''}</button>${devMember&&!user?`<button class="theme ulk${unlinkConf?' dg on':''}" data-act="unlink" aria-label="إلغاء ارتباط هذا الجهاز برقم الهاتف" title="${unlinkConf?'اضغط مرة أخرى للتأكيد':'إلغاء ارتباط هذا الجهاز برقم الهاتف'}">${ic('phone')}</button>`:''}</div>`;
+    if(REMOTE)bell=`<div class="bellrow">${devMember?`<button class="theme ulk${unlinkConf?' dg on':''}" data-act="unlink" aria-label="إلغاء ارتباط هذا الجهاز برقم الهاتف" title="${unlinkConf?'اضغط مرة أخرى للتأكيد':'إلغاء ارتباط هذا الجهاز برقم الهاتف'}">${ic('unlink')}</button>`:''}<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk">${ic('check')}<small>${esc(((find(pushMine.m)||{}).name||'').trim().split(/\s+/)[0])}</small></span>`:''}</button></div>`;
   }else if(view==='admin')row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button><button class="theme dg wl" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}<span class="tl">تسجيل الخروج</span></button>`;
   else row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button>`;
   try{localStorage.setItem('jamiya-name',s.name)}catch(e){}
@@ -708,7 +710,7 @@ async function gateGo(){
     state=normalize(raw)||defaultData();
     await Promise.all([loadPaid(),loadDeliv()]);
     cursor=clampIdx(todayIdx());view='home';
-    onbM=devMember;onb=!!find(devMember)&&!pushMine;
+    onbM=devMember;onbStep=1;onb=!!find(devMember)&&!pushMine;
     render();loadMyNotes();
   }finally{gateBusy=false}
 }
@@ -731,27 +733,27 @@ async function devRelease(id){
   catch(e){toast('تعذّر إلغاء الربط')}
   renderMembers();
 }
+let onbStep=1;
 function onbHTML(){
   const m=onbM&&find(onbM),mk='<div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>';
-  if(m&&onbIos)return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">${mk}
-  <h2>أهلًا ${esc(m.name)} 👋</h2>${iosSteps()}
-  <button class="btn pri" data-act="onb-skip" style="width:100%;justify-content:center">فهمت</button></div></div>`;
-  if(m)return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">${mk}
-  <h2>أهلًا ${esc(m.name)} 👋</h2>
-  <p>يسعدنا انضمامك إلى ${esc(state.settings.name)}. فعّل التنبيهات ليصلك كل جديد: موعد الدفع، ودورك في الاستلام، وأخبار الجمعية.</p>
+  if(!m)return'';
+  const first=esc(m.name.trim().split(/\s+/)[0]);
+  const dots=n=>`<div class="stp"><span class="${n===1?'on':''}">1</span><i></i><span class="${n===2?'on':''}">2</span></div>`;
+  if(onbStep===1&&canInstall())return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">${mk}
+  <h2>أهلًا ${esc(m.name)} 👋</h2>${dots(1)}
+  <p><b>الخطوة 1 من 2: ثبّت التطبيق على جوالك</b><br>يفتح الجمعية بنقرة واحدة من شاشتك الرئيسية، وهو شرط لتنبيهات الآيفون.</p>
+  ${onbIos?iosSteps():''}
+  ${onbIos?'':instBtn('')}
+  <button class="btn pri" data-act="onb-next" style="width:100%;justify-content:center">التالي: تفعيل التنبيهات</button>
+  </div><button class="onbskip" data-act="onb-next">تخطي هذه الخطوة</button></div>`;
+  return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">${mk}
+  <h2>أهلًا ${esc(m.name)} 👋</h2>${canInstall()||onbStep===2?dots(2):''}
+  <p><b>الخطوة ${canInstall()||onbStep===2?'2 من 2':'1 من 1'}: فعّل التنبيهات</b><br>يصلك موعد الدفع، ودورك في الاستلام، وأخبار ${esc(state.settings.name)}.</p>
   <div class="err" id="onbe"></div>
   <button class="btn pri" data-act="onb-push" style="width:100%;justify-content:center">${ic('bell')}تفعيل التنبيهات</button>
-  ${instBtn('')}
-  </div><button class="onbskip" data-act="onb-skip">تخطي</button></div>`;
-  return`<div class="onb" role="dialog" aria-modal="true" aria-label="الترحيب"><div class="onbc">${mk}
-  <h2>أهلًا بك في ${esc(state.settings.name)}</h2>
-  <p>أدخل رقم هاتفك لنتعرّف عليك.</p>
-  <label class="fld"><span>رقم هاتفك</span><div class="phn"><input class="in" id="onbp" type="tel" inputmode="tel" dir="ltr" placeholder="9XXXXXXX" autocomplete="tel"><b dir="ltr">+968</b></div></label>
-  <div class="err" id="onbe"></div>
-  <button class="btn pri" data-act="onb-go" style="width:100%;justify-content:center">متابعة</button>
   </div><button class="onbskip" data-act="onb-skip">تخطي</button></div>`;
 }
-function onbClose(){onb=false;onbM=null;try{localStorage.setItem('jamiya-onb','1')}catch(e){}const o=$('.onb');if(o)o.remove()}
+function onbClose(){onb=false;onbM=null;onbStep=1;try{localStorage.setItem('jamiya-onb','1')}catch(e){}const o=$('.onb');if(o)o.remove()}
 async function onbGo(){
   const ph=(($('#onbp')||{}).value||'').trim(),say=m=>{const e=$('#onbe');if(e)e.textContent=m};
   if(ph.replace(/\D/g,'').length<8)return say('أدخل رقم هاتف صحيح.');
@@ -1302,6 +1304,7 @@ function renderPay(){
   const subsN=list.filter(m=>pushSubs[m.id]>0).length,N=monthsCount(s);
   e.innerHTML=`<h3>${ic('check')}التحصيل</h3>
   <div class="pnav"><button class="ib" data-act="paynav" data-d="-1" aria-label="الشهر السابق" ${i<=0?'disabled':''}>${ic('chev')}</button><b>${MONTHS[mp.m]} ${mp.y}${isNow?' · الحالي':''}</b><button class="ib" data-act="paynav" data-d="1" aria-label="الشهر التالي" ${i>=N-1?'disabled':''} style="transform:scaleX(-1)">${ic('chev')}</button></div>
+  ${isNow?'':`<div style="margin:6px 0"><button class="btn sm" data-act="paytoday">${ic('cal')}العودة للشهر الحالي</button></div>`}
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill okp">${ic('check')}دفع ${done.length} من ${list.length}</span><span class="stat inl"><span>المحصّل</span>${money(sum)}<span>من</span>${money(tot)}</span></div>
   <div class="pbar"><i style="width:${tot?Math.round(sum*100/tot):0}%"></i></div>
   ${list.length?list.map(m=>{const ok=isPaid(k,m.id),sb=pushSubs[m.id]||0;
@@ -1401,7 +1404,7 @@ function click(e){
     case'go-login':loginErr='';view='login';render();break;
     case'go-home':view='home';render();break;
     case'go-admin':view='admin';render();break;
-    case'logout':user=null;creds=null;if(!devMember){state=defaultData();phones={};devices={};remoteUsers=[]}notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
+    case'logout':user=null;creds=null;phones={};devices={};remoteUsers=[];if(!devMember)state=defaultData();notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
     case'login':doLogin();break;
     case'prev':go(-1);break;
     case'next':go(1);break;
@@ -1465,12 +1468,14 @@ function click(e){
     case'onb-go':onbGo();break;
     case'onb-push':onbPush();break;
     case'onb-skip':onbClose();break;
+    case'onb-next':onbStep=2;onbIos=false;{const o=$('.onb');if(o)o.outerHTML=onbHTML()}break;
     case'tg-ml':openML=!openML;renderMembers();break;
     case'chippay':{
       const i=clampIdx(cursor),k=monthKey(state.settings,i);
       if(isPaid(k,id)){if(chipConf===id){chipConf='';setPaid(id,false,i)}else{chipConf=id;refreshPay()}}
       else{chipConf='';setPaid(id,true,i)}
       break}
+    case'paytoday':payIdx=null;payAllConf=false;renderPay();break;
     case'paynav':payIdx=clampIdx(payMonth()+(+b.dataset.d));payAllConf=false;renderPay();break;
     case'paytog':setPaid(id,true);break;
     case'payundo':setPaid(id,false);break;
@@ -1611,7 +1616,7 @@ function endSplash(force){
   state=defaultData();
   if(REMOTE)await restoreSession();
   const raw=await Storage.load();
-  if(REMOTE&&!user){if(raw){try{devMember=await rpc('jamiya_device_check',{p_token:devTok})||null}catch(e){}}else devMember=null}
+  if(REMOTE){if(raw||user){try{devMember=await rpc('jamiya_device_check',{p_token:devTok})||null}catch(e){}}else devMember=null}
   state=normalize(raw)||defaultData();
   if(REMOTE){if(!gated())await Promise.all([loadPaid(),loadDeliv()])}else paid=state.pay||{};
   draft=newDraft();cursor=clampIdx(todayIdx());

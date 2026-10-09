@@ -684,6 +684,11 @@ async function installApp(){
 function gateHTML(){
   const mk='<div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>';
   let nm='';try{nm=localStorage.getItem('jamiya-name')||''}catch(e){}
+  if(isIOS&&!isStandalone)return`<div class="gate"><div class="onbc">${mk}
+  <h2>${esc(nm||'الجمعية')}</h2>
+  <p><b>ثبّت التطبيق أولًا، ثم أدخل رقمك من داخله</b><br>في الآيفون يُعدّ المتصفح والتطبيق جهازين منفصلين، لذلك يُربط رقمك من التطبيق مباشرة.</p>
+  <div class="ios"><ol><li>افتح هذه الصفحة في <b>Safari</b>.</li><li>اضغط زر المشاركة <b>⎋</b> أسفل الشاشة.</li><li>اختر <b>إضافة إلى الشاشة الرئيسية</b> ثم <b>إضافة</b>.</li><li>افتح <b>الجمعية</b> من أيقونتها على الشاشة الرئيسية وأدخل رقم هاتفك.</li></ol></div>
+  </div><button class="alink" data-act="go-login">دخول الإدارة</button><div class="foot">إعداد: هاني الغطريفي</div></div>`;
   return`<div class="gate"><div class="onbc">${mk}
   <h2>${esc(nm||'الجمعية')}</h2>
   <p>أدخل رقم هاتفك المسجّل لدى الجمعية للدخول. يُربط رقمك بهذا الجهاز.</p>

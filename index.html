@@ -906,6 +906,7 @@ function renderHome(){
 
 /* ---------- كشف PDF ---------- */
 function loadScript(u){return new Promise((ok,no)=>{if(document.querySelector('script[src="'+u+'"]'))return ok();const e=document.createElement('script');e.src=u;e.onload=ok;e.onerror=()=>no(new Error('load'));document.head.appendChild(e)})}
+const loadLib=(u,g)=>window[g]?Promise.resolve():new Promise((res,rej)=>{const e=document.createElement('script');e.src=u;e.onload=res;e.onerror=()=>rej(new Error('lib'));document.head.appendChild(e)});
 async function makePdf(btn){
   if(pdfBusy)return;pdfBusy=true;if(btn)btn.disabled=true;toast('جارٍ تجهيز الكشف…');
   try{
@@ -946,13 +947,32 @@ async function makePdf(btn){
     const root=document.createElement('div');root.id='printroot';
     plan.chunks.forEach((c,k)=>root.appendChild(build(c,k,plan.chunks.length,plan.d)));
     document.body.appendChild(root);
-    const title0=document.title;document.title=`كشف ${s.name.replace(/[\\/:*?"<>|]/g,'')} ${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
-    document.body.classList.add('printing');
-    const done=()=>{document.body.classList.remove('printing');document.title=title0;root.remove();window.removeEventListener('afterprint',done)};
-    window.addEventListener('afterprint',done);
-    toast('في نافذة الطباعة اختر «حفظ كـ PDF» (Save as PDF)');
-    await new Promise(r=>setTimeout(r,350));
-    window.print();
+    const fname=`كشف ${s.name.replace(/[\\/:*?"<>|]/g,'')} ${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+    let ok=false;
+    try{
+      toast('جارٍ تجهيز ملف PDF…');
+      await loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','html2canvas');
+      await loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','jspdf');
+      root.style.cssText='display:block!important;position:fixed;left:-10000px;top:0';
+      if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+      const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'pt',format:'a4',orientation:'portrait'});
+      const pgs=[...root.querySelectorAll('.pg')];
+      for(let k=0;k<pgs.length;k++){
+        const cv=await html2canvas(pgs[k],{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false});
+        if(k)doc.addPage();
+        doc.addImage(cv.toDataURL('image/jpeg',0.93),'JPEG',0,0,595.28,841.89);
+      }
+      doc.save(fname+'.pdf');ok=true;toast('تم تنزيل الكشف');
+    }catch(err){console.error(err)}
+    if(!ok){
+      const title0=document.title;document.title=fname;root.style.cssText='';
+      document.body.classList.add('printing');
+      const done=()=>{document.body.classList.remove('printing');document.title=title0;root.remove();window.removeEventListener('afterprint',done)};
+      window.addEventListener('afterprint',done);
+      toast('تعذّر التنزيل المباشر. في نافذة الطباعة اختر «حفظ كـ PDF»');
+      await new Promise(r=>setTimeout(r,350));
+      window.print();
+    }else root.remove();
   }catch(e){console.error(e);toast('تعذّر إنشاء الكشف. أعد المحاولة.')}
   finally{pdfBusy=false;if(btn)btn.disabled=false}
 }

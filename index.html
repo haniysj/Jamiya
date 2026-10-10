@@ -611,7 +611,8 @@ let toolsOpen=false,toolsConfirm='',toolsMsg='',backupText='';
 let saveTimer=null,saveStatus='saved';
 let paid={},pushSubs={},payIdx=null,payAllConf=false,remBusy=false,pushOpen=false,pushMsg='',pushMine=null;
 try{pushMine=JSON.parse(localStorage.getItem('jamiya-push')||'null')}catch(e){}
-let phones={},onb=false,perms=[],openMem=new Set(),openML=true,editU=null,chipConf='';
+let userMember=null;const selfM=()=>userMember&&find(userMember)?userMember:devMember;
+let phones={},onb=false,perms=[],openMem=new Set(),openML=true,openAdd=false,editU=null,chipConf='';
 const ALLP=['pay','members','users','notify'];
 const PERM_T={pay:'تأكيد الدفع والتذكير',members:'إدارة الأعضاء والإعدادات والبيانات',users:'إدارة المستخدمين',notify:'إرسال وجدولة التنبيهات'};
 const PERM_S={pay:'التحصيل',members:'الأعضاء',users:'المستخدمون',notify:'التنبيهات'};
@@ -663,7 +664,7 @@ function headerHTML(){
   else row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button>`;
   try{localStorage.setItem('jamiya-name',s.name)}catch(e){}
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
-  <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p>${(()=>{const w=user||((devMember&&find(devMember))?find(devMember).name:'');return w?`<div class="wlc">أهلًا بك، <b>${esc(w)}</b> 👋</div>`:''})()}</div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
+  <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p>${(()=>{const w=user?((userMember&&find(userMember))?find(userMember).name:user):((devMember&&find(devMember))?find(devMember).name:'');return w?`<div class="wlc">أهلًا بك، <b>${esc(w)}</b> 👋</div>`:''})()}</div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
 }
 const iosSteps=()=>`<div class="ios"><div><b>تنبيهات الآيفون تعمل فقط من أيقونة التطبيق على الشاشة الرئيسية</b> (شرط من أبل، ويلزم iOS 16.4 أو أحدث). تحتاج هذه الخطوات مرة واحدة:</div>
   <ol><li>افتح الموقع في <b>Safari</b> (وليس داخل تطبيق آخر)، ثم اضغط زر المشاركة <span class="kic">${ic('share')}<b>مشاركة</b></span> في شريط Safari نفسه.</li>
@@ -1002,7 +1003,7 @@ async function restoreSession(){
   if(!a||!a.u||!a.p)return;
   try{
     const me=await rpc('jamiya_me',{p_u:a.u,p_p:a.p});
-    if(me){creds={u:a.u,p:a.p};user=a.u;perms=me.perms||[];await afterAuth()}
+    if(me){creds={u:a.u,p:a.p};user=a.u;perms=me.perms||[];userMember=me.member||null;await afterAuth()}
     else{try{localStorage.removeItem('jamiya-auth')}catch(e){}}
   }catch(e){}
 }
@@ -1019,7 +1020,7 @@ async function doLogin(){
   try{
     const me=await rpc('jamiya_me',{p_u:u,p_p:p});
     if(!me){fail('اسم المستخدم أو كلمة المرور غير صحيحة');return}
-    creds={u,p};user=u;perms=me.perms||[];loginErr='';
+    creds={u,p};user=u;perms=me.perms||[];userMember=me.member||null;loginErr='';
     try{localStorage.setItem('jamiya-auth',JSON.stringify({u,p}))}catch(x){}
     await afterAuth();
     const raw=await Storage.load();if(raw)state=normalize(raw)||state;
@@ -1108,7 +1109,8 @@ function refreshStatus(){const b=$('#schBox');if(b)b.innerHTML=statusHTML()}
 function renderMembers(){
   const N=monthsCount(state.settings),d=draft;
   $('#memBox').innerHTML=`<h3>${ic('users')}الأعضاء</h3><div id="schBox">${statusHTML()}</div>
-  <div class="addbox"><div class="fld"><span>اسم العضو الجديد</span><input class="in" data-d="name" value="${esc(d.name)}" placeholder="مثال: سالم الحارثي"></div>
+  <button class="coll" data-act="tg-add" aria-expanded="${openAdd}" style="margin-top:4px">${ic('plus')}إضافة عضو جديد<span class="sp"></span>${ic('down','cv')}</button>
+  ${openAdd?`<div class="addbox" style="margin-top:8px"><div class="fld"><span>اسم العضو الجديد</span><input class="in" data-d="name" value="${esc(d.name)}" placeholder="مثال: سالم الحارثي"></div>
    ${REMOTE&&can('members')?`<div class="fld"><span>رقم الهاتف (اختياري)</span><div class="phrow"><input class="in" dir="ltr" inputmode="tel" data-d="phone" value="${esc(phLocal(d.phone))}" placeholder="9XXXXXXX"></div></div>`:''}
    <div class="mem-bot"><label class="fld amt"><span>المبلغ الشهري (إجباري)</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-d="monthly" value="${d.monthly}"></label>
    <div class="tot"><span>إجمالي المستحق</span><b id="dTot">${money(toInt(d.monthly)*N)}</b></div>
@@ -1116,12 +1118,12 @@ function renderMembers(){
    <button class="btn sm" data-act="tp" data-id="draft">${ic('cal')}أشهر مفضلة (<span data-cnt="draft">${inRange(d.months).length}</span>)<span data-asum="draft">${asumTxt(d)}</span></button></div>
    ${draftPicker?picker(d.months,'draft'):''}${tagsHTML(d,'draft')}
    <div class="err">${esc(draftErr)}</div>
-   <button class="btn pri" data-act="add">${ic('plus')}إضافة العضو</button></div>
+   <button class="btn pri" data-act="add">${ic('plus')}إضافة العضو</button></div>`:''}
   <button class="coll" data-act="tg-ml" aria-expanded="${openML}" style="margin-top:8px">${ic('users')}قائمة الأعضاء<small>${state.members.length} عضوًا</small><span class="sp"></span>${ic('down','cv')}</button>
   ${openML?(state.members.length?`<div>${state.members.map(memberRow).join('')}</div>`:'<p class="hint">لا يوجد أعضاء بعد.</p>'):''}
   <p class="hint">الترتيب بالأسهم يحدد أسبقية الأعضاء داخل نفس مجموعة موعد الاستلام. الأشهر المفضلة تُعيد ترتيب العضو داخل مجموعته فقط لتقترب دفعاته من الأشهر المختارة، دون أي تعارض.</p>`;
 }
-const listUsers=()=>REMOTE?remoteUsers:state.users.map(x=>({u:x.u,perms:x.perms||ALLP.slice()}));
+const listUsers=()=>REMOTE?remoteUsers:state.users.map(x=>({u:x.u,perms:x.perms||ALLP.slice(),member:x.member||null}));
 const permChecks=(arr)=>ALLP.map(k=>`<label class="pk"><input type="checkbox" data-pk="${k}" ${arr.includes(k)?'checked':''}>${PERM_T[k]}</label>`).join('');
 function renderUsers(){
   const list=listUsers();
@@ -1129,10 +1131,10 @@ function renderUsers(){
   const rows=list.map(x=>{
     const me=x.u===user,ed=editU&&editU.orig===x.u;
     const pills=(x.perms||[]).map(k=>`<span class="pill">${PERM_S[k]||k}</span>`).join('')||'<span class="none">بدون صلاحيات</span>';
-    return`<div class="urow2"><div class="urow"><div style="flex:1;min-width:0"><b>${esc(x.u)}</b>${me?' <span class="pill gold">أنت</span>':''}<div class="tags">${pills}</div></div>
+    return`<div class="urow2"><div class="urow"><div style="flex:1;min-width:0"><b>${esc(x.u)}</b>${me?' <span class="pill gold">أنت</span>':''}${x.member&&find(x.member)?` <span class="pill" title="العضو المرتبط">🔗 ${esc(find(x.member).name)}</span>`:''}<div class="tags">${pills}</div></div>
       <button class="ib" data-act="uedit" data-u="${esc(x.u)}" aria-label="تعديل المستخدم" title="تعديل">${ic('pen')}</button>${me?'':`<button class="ib dg" data-act="udel" data-u="${esc(x.u)}" aria-label="حذف المستخدم" title="حذف">${ic('trash')}</button>`}</div>
       ${ed?`<div class="addbox" id="editbox"><div class="grid2"><div class="fld"><span>اسم المستخدم</span><input class="in" id="eu-n" value="${esc(editU.name)}" autocapitalize="off"></div><div class="fld"><span>كلمة مرور جديدة (اتركها فارغة لعدم التغيير)</span><input class="in" id="eu-p" type="text" autocapitalize="off" autocomplete="off"></div></div>
-      <div class="lbl" style="margin:8px 0 2px">الصلاحيات</div><div id="editperm">${permChecks(editU.perms)}</div>
+      ${REMOTE?`<div class="fld" style="margin-top:8px"><span>العضو المرتبط بهذا المستخدم (تصله تنبيهاته وترحيبه)</span><select class="in" id="eu-m"><option value="">— بدون ربط —</option>${state.members.map(m=>{const o=remoteUsers.find(r=>r.member===m.id&&r.u!==x.u);return`<option value="${esc(m.id)}"${editU.member===m.id?' selected':''}${o?' disabled':''}>${esc(m.name)}${o?' (مرتبط بـ '+esc(o.u)+')':''}</option>`}).join('')}</select></div>`:''}<div class="lbl" style="margin:8px 0 2px">الصلاحيات</div><div id="editperm">${permChecks(editU.perms)}</div>
       <div class="err" id="uerr2"></div><div style="display:flex;gap:8px"><button class="btn pri sm" data-act="usave">${ic('check')}حفظ</button><button class="btn sm" data-act="ucancel">إلغاء</button></div></div>`:''}</div>`}).join('');
   $('#usrBox').innerHTML=`<h3>${ic('lock')}مستخدمو لوحة التحكم</h3>${warn}<div class="ulist">${rows}</div>
   <div class="addbox" style="margin-top:12px"><div class="lbl" style="margin-bottom:6px">إضافة مستخدم</div><div class="grid2" style="align-items:end"><div class="fld"><span>اسم المستخدم</span><input class="in" id="nu" autocapitalize="off"></div><div class="fld"><span>كلمة المرور</span><input class="in" id="np" type="text" autocapitalize="off"></div></div>
@@ -1159,7 +1161,7 @@ async function saveMe(){
 async function userAction(kind,arg){
   const say=m=>{const e=$('#uerr2')||$('#uerr');if(e)e.textContent=m};
   const getp=sel=>[...document.querySelectorAll(sel+' [data-pk]')].filter(c=>c.checked).map(c=>c.dataset.pk);
-  const mapErr=e=>/exists/.test(e.message)?'اسم المستخدم موجود مسبقًا.':/last_admin/.test(e.message)?'يجب أن يبقى مستخدم واحد على الأقل بصلاحية إدارة المستخدمين.':/forbidden|42501/.test(e.message)?'ليس لديك صلاحية.':'تعذّر تنفيذ العملية.';
+  const mapErr=e=>/member_taken/.test(e.message)?'هذا العضو مرتبط بمستخدم آخر.':/nomember/.test(e.message)?'العضو غير موجود. احفظ بيانات الأعضاء أولًا.':/exists/.test(e.message)?'اسم المستخدم موجود مسبقًا.':/last_admin/.test(e.message)?'يجب أن يبقى مستخدم واحد على الأقل بصلاحية إدارة المستخدمين.':/forbidden|42501/.test(e.message)?'ليس لديك صلاحية.':'تعذّر تنفيذ العملية.';
   try{
     if(kind==='add'){
       const u=($('#nu').value||'').trim(),p=$('#np').value||'',pm=getp('#addperm');
@@ -1182,6 +1184,8 @@ async function userAction(kind,arg){
         if(orig===user){user=nn;perms=pm}
         touch();
       }else{
+        const em=($('#eu-m')||{}).value||'',om=(remoteUsers.find(r=>r.u===orig)||{}).member||'';
+        if(em!==om){await rpc('jamiya_set_user_member',{p_u:creds.u,p_p:creds.p,p_target:orig,p_member:em});if(orig===creds.u)userMember=em||null}
         await rpc('jamiya_update_user',{p_u:creds.u,p_p:creds.p,p_target:orig,p_newname:nn===orig?null:nn,p_newpass:np||null,p_perms:pm});
         if(orig===creds.u){
           creds={u:nn,p:np||creds.p};user=nn;perms=pm;
@@ -1292,7 +1296,7 @@ function pushPanelHTML(){
   if(pushOn()&&mine)inner=`<div class="row"><span class="pill gold">${ic('bell')}التنبيهات مفعّلة لـ ${esc(mine.name)}</span><button class="btn sm danger" data-act="pushoff">إيقاف التنبيهات</button>${cl}</div>`;
   else if(isIOS&&!isStandalone)inner=`${iosSteps()}<div class="row">${cl}</div>`;
   else if(!pushOK)inner=`<div>هذا المتصفح لا يدعم التنبيهات. جرّب Chrome أو Safari الحديث.</div><div class="row">${cl}</div>`;
-  else inner=`<div class="lbl">فعّل التنبيهات ليصلك تذكير الدفع ودورك في الاستلام:</div><div class="row"><button class="btn pri sm" data-act="pushon">${ic('bell')}تفعيل التنبيهات${devMember&&find(devMember)?' لـ '+esc(find(devMember).name.trim().split(/\s+/)[0]):''}</button>${cl}</div><div class="err">${esc(pushMsg)}</div>`;
+  else inner=`<div class="lbl">فعّل التنبيهات ليصلك تذكير الدفع ودورك في الاستلام:</div><div class="row"><button class="btn pri sm" data-act="pushon">${ic('bell')}تفعيل التنبيهات${selfM()&&find(selfM())?' لـ '+esc(find(selfM()).name.trim().split(/\s+/)[0]):''}</button>${cl}</div><div class="err">${esc(pushMsg)}</div>`;
   return`<section class="card ppanel" style="margin-top:12px">${inner}</section>`;
 }
 function pushUI(){const h=document.querySelector('header.top');if(h)h.outerHTML=headerHTML();if(view==='home')renderHome()}
@@ -1368,7 +1372,7 @@ async function remind(memberId){
 }
 const b64u=t=>{const p='='.repeat((4-t.length%4)%4),r=atob((t+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(r,c=>c.charCodeAt(0))};
 async function pushEnable(idArg,sayArg){
-  const sel=$('#pushm'),id=idArg||devMember||(sel?sel.value:'');
+  const sel=$('#pushm'),id=idArg||selfM()||(sel?sel.value:'');
   const say=sayArg||(m=>{pushMsg=m;const e=document.querySelector('.ppanel .err');if(e)e.textContent=m});
   if(!id)return say('اختر اسمك أولًا.');
   try{
@@ -1380,7 +1384,8 @@ async function pushEnable(idArg,sayArg){
     let sub=await reg.pushManager.getSubscription();
     if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(key)});
     const j=sub.toJSON();
-    await rpc('jamiya_push_subscribe2',{p_member:id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_token:devTok});
+    if(creds&&userMember&&id===userMember&&devMember!==id)await rpc('jamiya_push_subscribe3',{p_member:id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_u:creds.u,p_p:creds.p});
+    else await rpc('jamiya_push_subscribe2',{p_member:id,p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_token:devTok});
     pushMine={m:id};try{localStorage.setItem('jamiya-push',JSON.stringify(pushMine))}catch(e){}
     pushOpen=false;pushMsg='';pushUI();toast('تم تفعيل التنبيهات');return true;
   }catch(e){say('تعذّر التفعيل. تأكد من الاتصال وحاول مرة أخرى.')}
@@ -1430,7 +1435,7 @@ function click(e){
     case'go-login':loginErr='';view='login';render();break;
     case'go-home':view='home';render();break;
     case'go-admin':view='admin';render();break;
-    case'logout':user=null;creds=null;phones={};devices={};remoteUsers=[];if(!devMember)state=defaultData();notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
+    case'logout':user=null;userMember=null;creds=null;phones={};devices={};remoteUsers=[];if(!devMember)state=defaultData();notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
     case'login':doLogin();break;
     case'prev':go(-1);break;
     case'next':go(1);break;
@@ -1482,7 +1487,7 @@ function click(e){
     case'uadd':userAction('add');break;
     case'udel':userAction('del',b.dataset.u);break;
     case'mesave':saveMe();break;
-    case'uedit':{const x=listUsers().find(y=>y.u===b.dataset.u);if(x){editU={orig:x.u,name:x.u,perms:(x.perms||[]).slice()};renderUsers()}break}
+    case'uedit':{const x=listUsers().find(y=>y.u===b.dataset.u);if(x){editU={orig:x.u,name:x.u,perms:(x.perms||[]).slice(),member:x.member||''};renderUsers()}break}
     case'usave':userAction('save');break;
     case'ucancel':editU=null;renderUsers();break;
     case'tg-mem':openMem.has(id)?openMem.delete(id):openMem.add(id);renderMembers();break;
@@ -1496,6 +1501,7 @@ function click(e){
     case'onb-skip':onbClose();break;
     case'onb-next':onbStep=2;onbIos=false;{const o=$('.onb');if(o)o.outerHTML=onbHTML()}break;
     case'tg-ml':openML=!openML;renderMembers();break;
+    case'tg-add':openAdd=!openAdd;renderMembers();break;
     case'chippay':{
       const i=clampIdx(cursor),k=monthKey(state.settings,i);
       if(isPaid(k,id)){if(chipConf===id){chipConf='';setPaid(id,false,i)}else{chipConf=id;refreshPay()}}

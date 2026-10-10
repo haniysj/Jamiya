@@ -663,7 +663,7 @@ function headerHTML(){
   else row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button>`;
   try{localStorage.setItem('jamiya-name',s.name)}catch(e){}
   return`<header class="top"><div class="brand"><div class="mark"><svg viewBox="0 0 1536 801"><use href="#omr"/></svg></div>
-  <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p>${(devMember&&find(devMember))?`<div class="wlc">أهلًا بك، <b>${esc(find(devMember).name)}</b> 👋</div>`:''}</div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
+  <div><h1>${esc(s.name)}</h1><p>${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y} · ${N} شهرًا</p>${(()=>{const w=user||((devMember&&find(devMember))?find(devMember).name:'');return w?`<div class="wlc">أهلًا بك، <b>${esc(w)}</b> 👋</div>`:''})()}</div></div><nav class="nav"><div class="navrow">${th}${row}</div>${bell}</nav></header>`;
 }
 const iosSteps=()=>`<div class="ios"><div><b>تنبيهات الآيفون تعمل فقط من أيقونة التطبيق على الشاشة الرئيسية</b> (شرط من أبل، ويلزم iOS 16.4 أو أحدث). تحتاج هذه الخطوات مرة واحدة:</div>
   <ol><li>افتح الموقع في <b>Safari</b> (وليس داخل تطبيق آخر)، ثم اضغط زر المشاركة <span class="kic">${ic('share')}<b>مشاركة</b></span> في شريط Safari نفسه.</li>

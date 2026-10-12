@@ -396,7 +396,7 @@ const REMOTE=!!(CFG.supabaseUrl&&CFG.supabaseKey);
 let devTok='';try{devTok=localStorage.getItem('jamiya-dev')||''}catch(e){}
 if(devTok.length<20){devTok=Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>b.toString(16).padStart(2,'0')).join('');try{localStorage.setItem('jamiya-dev',devTok)}catch(e){}}
 let devMember=null,devices={},devConf='',unlinkConf=false,unlinkT=null,gateBusy=false;
-let creds=null,remoteUsers=[],loadFailed=false,notes={},noteSel=null,noteEdit=false,deliv={},delConf='';
+let creds=null,remoteUsers=[],loadFailed=false,notes={},noteShare={},noteSel=null,noteEdit=false,deliv={},delConf='';
 async function rpc(fn,args){
   const r=await fetch(CFG.supabaseUrl+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':CFG.supabaseKey,'Content-Type':'application/json'},body:JSON.stringify(args||{})});
   const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
@@ -835,8 +835,9 @@ function noteHTML(){
    <button type="button" class="xb" data-act="note-close" aria-label="إغلاق">×</button>
    <h3>${esc(m?m.name:'')} · ${mLabel(k)}</h3>
    ${ed?`<textarea class="in" id="ntxt" dir="rtl" style="text-align:right" maxlength="500" placeholder="اكتب الملاحظة (تظهر للمستخدمين المسجلين ولصاحب الدور فقط)">${esc(txt)}</textarea>
+   <div class="fld" style="margin:8px 0"><span>إظهار الملاحظة أيضًا لعضو آخر (اختياري)</span><select class="in" id="nshare"><option value="">— صاحب المبلغ فقط —</option>${state.members.filter(x=>x.id!==id).map(x=>`<option value="${esc(x.id)}"${noteShare[k+'|'+id]===x.id?' selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" data-act="note-save">حفظ</button>${txt?`<button class="btn danger" data-act="note-del">حذف</button>`:''}</div>`
-   :`<div class="nt" dir="rtl" style="text-align:right">${esc(txt)}</div>`}
+   :`<div class="nt" dir="rtl" style="text-align:right">${esc(txt)}</div>${creds&&noteShare[k+'|'+id]&&find(noteShare[k+'|'+id])?`<div class="hint" style="margin-top:8px">تظهر أيضًا لـ ${esc(find(noteShare[k+'|'+id]).name)}</div>`:''}`}
   </div></div>`;
 }
 function showNote(){let b=$('#notebox');if(!b){b=document.createElement('div');b.id='notebox';b.addEventListener('click',click);document.body.appendChild(b)}b.innerHTML=noteHTML();if(noteSel&&creds&&can('members')&&noteEdit){const t=$('#ntxt');if(t&&!t.value)try{t.focus()}catch(x){}}}
@@ -849,8 +850,10 @@ async function loadMyNotes(){
 }
 async function saveNote(del){
   if(!noteSel)return;const[k,id]=noteSel,v=del?'':($('#ntxt').value||'').trim();
-  try{await rpc('jamiya_note_set',{p_u:creds.u,p_p:creds.p,p_month:k,p_member:id,p_text:v});
+  try{const sh=del?'':(($('#nshare')||{}).value||'');
+    await rpc('jamiya_note_set2',{p_u:creds.u,p_p:creds.p,p_month:k,p_member:id,p_text:v,p_share:sh});
     if(v)notes[k+'|'+id]=v;else delete notes[k+'|'+id];
+    if(v&&sh)noteShare[k+'|'+id]=sh;else delete noteShare[k+'|'+id];
     toast(v?'تم حفظ الملاحظة':'تم حذف الملاحظة');noteSel=null;showNote();renderHome()}
   catch(e){toast('تعذّر حفظ الملاحظة')}
 }
@@ -991,6 +994,7 @@ function loginHTML(){
 }
 async function afterAuth(){
   try{notes=await rpc('jamiya_notes_get',{p_u:creds.u,p_p:creds.p})||{}}catch(e){notes={}}
+  try{noteShare=await rpc('jamiya_notes_share_get',{p_u:creds.u,p_p:creds.p})||{}}catch(e){noteShare={}}
   if(can('users')){try{remoteUsers=await rpc('jamiya_users2',{p_u:creds.u,p_p:creds.p})||[]}catch(e){remoteUsers=[]}}
   if(can('members')||can('pay')){try{phones=await rpc('jamiya_phones',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
   if(can('members')||can('pay')){try{devices=await rpc('jamiya_devices_list',{p_u:creds.u,p_p:creds.p})||{}}catch(e){}}
@@ -1435,7 +1439,7 @@ function click(e){
     case'go-login':loginErr='';view='login';render();break;
     case'go-home':view='home';render();break;
     case'go-admin':view='admin';render();break;
-    case'logout':user=null;userMember=null;creds=null;phones={};devices={};remoteUsers=[];if(!devMember)state=defaultData();notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
+    case'logout':user=null;userMember=null;noteShare={};creds=null;phones={};devices={};remoteUsers=[];if(!devMember)state=defaultData();notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
     case'login':doLogin();break;
     case'prev':go(-1);break;
     case'next':go(1);break;

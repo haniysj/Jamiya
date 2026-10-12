@@ -908,19 +908,120 @@ function renderHome(){
 }
 
 
+
+/* ---------- الأرشفة والاستيراد ---------- */
+let arcList=null,arcStep=0,arcKeep='full',arcDelConf='',arcBusy=false,arcMsg='';
+let openImp=false,impMode='basic',impPh=false,impMsg='';
+const periodTxt=(a,b)=>{const p=x=>{const[y,m]=String(x).split('-').map(Number);return MONTHS[(m||1)-1]+' '+y};return p(a)+' – '+p(b)};
+const normNm=t=>String(t||'').replace(/\s+/g,' ').trim();
+async function loadArchives(){
+  if(!REMOTE||!creds||!can('members'))return;
+  try{arcList=await rpc('jamiya_archives_list',{p_u:creds.u,p_p:creds.p})||[]}catch(e){arcList=[]}
+  renderArchive();if(openImp)renderMembers();
+}
+function arcName(){const s=state.settings,N=monthsCount(s),a=monthPos(s,0),b=monthPos(s,N-1);return{name:`${normNm(s.name)} · ${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y}`,start:`${a.y}-${String(a.m+1).padStart(2,'0')}`,end:`${b.y}-${String(b.m+1).padStart(2,'0')}`}}
+function buildArchive(){
+  const s=state.settings,sc=computeSchedule(state),N=monthsCount(s),nm=arcName();
+  const months=sc.months.map(m=>{const k=monthKey(s,m.i);return{i:m.i,m:m.m,y:m.y,key:k,payments:m.payments.map(p=>({id:p.id,name:p.name,amount:p.amount,note:(notes[k+'|'+p.id]||'').trim(),delivered:!!deliv[k+'|'+p.id]}))}});
+  return{v:1,name:nm.name,start:nm.start,end:nm.end,settings:JSON.parse(JSON.stringify(s)),
+    members:state.members.map(m=>({id:m.id,name:m.name,monthly:toInt(m.monthly),pref:m.pref,months:(m.months||[]).slice(),amts:Object.assign({},m.amts||{}),phone:phones[m.id]||''})),
+    months,pot:sc.pot,total:sc.total,paid:JSON.parse(JSON.stringify(paid||{})),archivedAt:new Date().toISOString()};
+}
+async function doArchive(){
+  if(arcBusy)return;arcBusy=true;arcMsg='جارٍ الأرشفة…';renderArchive();
+  try{
+    const data=buildArchive(),nm=arcName(),n=new Date();
+    const keep=arcKeep!=='none';
+    const members=arcKeep==='none'?[]:state.members.map(m=>({id:m.id,name:m.name,monthly:toInt(m.monthly),pref:arcKeep==='full'?m.pref:'mid',months:[],amts:{}}));
+    const st=state.settings,ns={name:st.name,years:st.years,share:st.share,startYear:n.getFullYear(),startMonth:n.getMonth()+1};
+    const nd={settings:ns,members,demo:false};
+    try{nd.payouts=payoutsOf(Object.assign({},nd,{settings:ns}))}catch(e){nd.payouts={}}
+    await rpc('jamiya_archive_create',{p_u:creds.u,p_p:creds.p,p_name:nm.name,p_start:nm.start,p_end:nm.end,p_data:data,p_newdata:nd,p_keep:keep});
+    const raw=await Storage.load();if(raw)state=normalize(raw)||state;
+    paid={};deliv={};notes={};noteShare={};
+    if(!keep){phones={};devices={};if(devMember){devMember=null;pushMine=null;try{localStorage.removeItem('jamiya-push')}catch(e){}}userMember=null}
+    arcStep=0;arcMsg='تمت الأرشفة وتصفير الجمعية. يمكنك الآن ضبط شهر البداية في الإعدادات.';
+    draft=newDraft();cursor=clampIdx(todayIdx());
+    await loadArchives();render();toast('تمت أرشفة الجمعية');
+  }catch(e){arcMsg='تعذّرت الأرشفة. لم يتغير شيء، حاول مرة أخرى.';console.error(e)}
+  arcBusy=false;renderArchive();
+}
+async function arcPdf(id,btn){
+  if(btn)btn.disabled=true;
+  try{
+    const d=await rpc('jamiya_archive_get',{p_u:creds.u,p_p:creds.p,p_id:id});
+    if(!d||!d.months)throw 0;
+    await makePdf(null,{settings:d.settings,sched:{months:d.months,pot:d.pot,total:d.total},members:(d.members||[]).length,fname:'كشف '+String(d.name).replace(/[\\/:*?"<>|]/g,'')});
+  }catch(e){toast('تعذّر تنزيل كشف الأرشيف')}
+  if(btn)btn.disabled=false;
+}
+function renderArchive(){
+  const el=$('#arcBox');if(!el)return;
+  if(!REMOTE||!creds||!can('members')){el.innerHTML='';return}
+  const nm=arcName(),opt=(k,t)=>`<button type="button" class="btn sm${arcKeep===k?' pri':''}" data-act="arc-keep" data-v="${k}" style="justify-content:flex-start;text-align:right;white-space:normal;line-height:1.5">${arcKeep===k?ic('check'):''}${t}</button>`;
+  let ctl='';
+  if(arcStep===0)ctl=`<button class="btn" data-act="arc-start">${ic('db')}أرشفة الجمعية الحالية</button>`;
+  else if(arcStep===1)ctl=`<div class="lbl" style="margin:4px 0 6px">هل تريد نسخ الأعضاء إلى الجمعية الجديدة؟</div><div style="display:flex;flex-direction:column;gap:6px">${opt('full','نعم، نسخ الأعضاء مع ترتيبهم وموعد استلامهم المفضل')}${opt('basic','نعم، نسخ الأسماء والمبالغ الشهرية فقط')}${opt('none','لا، البدء بجمعية فارغة بدون أعضاء')}</div>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri sm" data-act="arc-next">متابعة</button><button class="btn sm" data-act="arc-cancel">إلغاء</button></div>`;
+  else{
+    const gone=arcKeep==='none'?'والأعضاء وأرقام هواتفهم وارتباط أجهزتهم':'';
+    ctl=`<div class="demo" style="margin:4px 0 8px"><b>تأكيد ${arcStep-1} من 2.</b> ستُحفظ «${esc(nm.name)}» في الأرشيف، ثم تُحذف من الجمعية الحالية: المدفوعات والتسليمات والملاحظات${gone?' '+gone:''}، وتُبنى الأدوار من جديد. لا يمكن التراجع عن التصفير.</div>
+    <div style="display:flex;gap:8px"><button class="btn ${arcStep===3?'danger':'pri'} sm" data-act="arc-next"${arcBusy?' disabled':''}>${arcStep===3?'نعم، أرشف وصفّر الآن':'تأكيد (1 من 2)'}</button><button class="btn sm" data-act="arc-cancel">إلغاء</button></div>`;
+  }
+  const list=arcList===null?'<p class="hint">جارٍ تحميل الأرشيف…</p>':(arcList.length?`<div class="ulist">${arcList.map(a=>`<div class="urow"><div style="flex:1;min-width:0"><b>${esc(a.name)}</b><div class="tags"><span class="pill">${esc(periodTxt(a.start,a.end))}</span><span class="pill">${a.members} عضوًا</span><span class="pill">${a.months} شهرًا</span></div></div>
+    <button class="btn sm pdfb" data-act="arc-pdf" data-id="${esc(a.id)}" aria-label="تنزيل كشف الأرشيف PDF" title="تنزيل كشف PDF"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 2h14l7 7v19a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="#D32F2F"/><path d="M21 2v5a2 2 0 0 0 2 2h5z" fill="#FF8A80"/><text x="16.5" y="24" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="9.5" fill="#fff">PDF</text></svg></button>
+    <button class="ib dg" data-act="arc-del" data-id="${esc(a.id)}" aria-label="حذف الأرشيف" title="${arcDelConf===a.id?'اضغط مرة أخرى للحذف النهائي':'حذف'}">${arcDelConf===a.id?'تأكيد؟':ic('trash')}</button></div>`).join('')}</div>`:'<p class="hint">لا توجد جمعيات مؤرشفة بعد.</p>');
+  el.innerHTML=`<hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><h3 style="font-size:16px">${ic('db')}أرشفة الجمعية</h3>
+  <p class="hint" style="margin-top:0">عند انتهاء الجمعية تُحفظ بياناتها كاملة (الأعضاء، الأدوار، المبالغ، الملاحظات) باسم الجمعية وفترتها، ثم تُصفَّر لبدء جمعية جديدة.</p>
+  ${ctl}${arcMsg?`<div class="hint" style="margin-top:8px"><b>${esc(arcMsg)}</b></div>`:''}
+  <div class="lbl" style="margin:14px 0 6px">الجمعيات المؤرشفة</div>${list}`;
+}
+async function importArchive(){
+  const id=($('#impSel')||{}).value;if(!id){impMsg='اختر الأرشيف أولًا.';renderMembers();return}
+  impMsg='جارٍ الاستيراد…';renderMembers();
+  try{
+    const d=await rpc('jamiya_archive_get',{p_u:creds.u,p_p:creds.p,p_id:id});
+    if(!d||!Array.isArray(d.members))throw 0;
+    const have=new Set(state.members.map(m=>normNm(m.name))),added=[],phm={};let skip=0;
+    d.members.forEach(m=>{
+      if(have.has(normNm(m.name))){skip++;return}
+      have.add(normNm(m.name));
+      const nid=uid();phm[nid]=m.phone||'';
+      added.push({id:nid,name:m.name,monthly:toInt(m.monthly),pref:impMode==='full'&&PREF_KEYS.includes(m.pref)?m.pref:'mid',months:[],amts:{}});
+    });
+    added.forEach(m=>state.members.push(m));
+    touch();
+    let phOk=0;
+    if(impPh&&can('members')){for(const m of added){if(phm[m.id]){try{await rpc('jamiya_admin_set_phone',{p_u:creds.u,p_p:creds.p,p_member:m.id,p_phone:phm[m.id]});phones[m.id]=phm[m.id];phOk++}catch(e){}}}}
+    impMsg=`أُضيف ${added.length} عضوًا${skip?`، وتخطّينا ${skip} لوجودهم بنفس الاسم`:''}${impPh?`، وأرقام الهاتف المضافة: ${phOk}`:''}. الأدوار بُنيت من جديد.`;
+    renderSummary();renderMembers();renderSettings();toast('تم استيراد الأعضاء');
+  }catch(e){impMsg='تعذّر الاستيراد. حاول مرة أخرى.';renderMembers()}
+}
+function importHTML(){
+  if(!REMOTE||!creds||!can('members'))return'';
+  const body=openImp?(arcList===null?'<p class="hint">جارٍ تحميل الأرشيف…</p>':(!arcList.length?'<p class="hint">لا توجد جمعيات مؤرشفة للاستيراد منها.</p>':`<div class="addbox" style="margin-top:8px"><div class="fld"><span>الأرشيف</span><select class="in" id="impSel">${arcList.map(a=>`<option value="${esc(a.id)}">${esc(a.name)} (${a.members} عضوًا)</option>`).join('')}</select></div>
+   <div class="lbl" style="margin:8px 0 4px">ما الذي يُستورد؟</div><div style="display:flex;flex-direction:column;gap:6px">
+   <button type="button" class="btn sm${impMode==='basic'?' pri':''}" data-act="imp-mode" data-v="basic" style="justify-content:flex-start;text-align:right;white-space:normal;line-height:1.5">${impMode==='basic'?ic('check'):''}الأسماء والمبالغ الشهرية فقط</button>
+   <button type="button" class="btn sm${impMode==='full'?' pri':''}" data-act="imp-mode" data-v="full" style="justify-content:flex-start;text-align:right;white-space:normal;line-height:1.5">${impMode==='full'?ic('check'):''}الأعضاء مع ترتيبهم وموعد الاستلام المفضل (نفس الأدوار)</button>
+   <button type="button" class="btn sm${impPh?' pri':''}" data-act="imp-ph" style="justify-content:flex-start;text-align:right">${impPh?ic('check'):''}مع أرقام الهاتف</button></div>
+   <p class="hint">يُضاف الأعضاء إلى الحاليين، ويُتخطّى من يوجد بنفس الاسم. الأدوار تُبنى من جديد.</p>
+   <button class="btn pri" data-act="imp-go" style="margin-top:4px">${ic('plus')}استيراد</button></div>`)):'';
+  return`<button class="coll" data-act="tg-imp" aria-expanded="${openImp}" style="margin-top:8px">${ic('db')}استيراد أعضاء من أرشيف سابق<span class="sp"></span>${ic('down','cv')}</button>${body}${impMsg?`<div class="hint" style="margin-top:6px"><b>${esc(impMsg)}</b></div>`:''}`;
+}
+
 /* ---------- كشف PDF ---------- */
 function loadScript(u){return new Promise((ok,no)=>{if(document.querySelector('script[src="'+u+'"]'))return ok();const e=document.createElement('script');e.src=u;e.onload=ok;e.onerror=()=>no(new Error('load'));document.head.appendChild(e)})}
 const loadLib=(u,g)=>window[g]?Promise.resolve():new Promise((res,rej)=>{const e=document.createElement('script');e.src=u;e.onload=res;e.onerror=()=>rej(new Error('lib'));document.head.appendChild(e)});
-async function makePdf(btn){
+async function makePdf(btn,src){
   if(pdfBusy)return;pdfBusy=true;if(btn)btn.disabled=true;toast('جارٍ تجهيز الكشف…');
   try{
     try{await Promise.all([document.fonts.load('400 14px "Readex Pro"'),document.fonts.load('700 14px "Readex Pro"'),document.fonts.load('600 14px "Readex Pro"')])}catch(e){}
-    const s=state.settings,sched=computeSchedule(state),N=monthsCount(s),n=new Date();
+    const s=src?src.settings:state.settings,sched=src?src.sched:computeSchedule(state),N=src?src.sched.months.length:monthsCount(s),n=new Date(),memCount=src?src.members:state.members.length;
     const cols=['#E7A596','#B4A4D4','#86A9DA','#E4BD62','#7DB88A'];
     const dt=`${n.getDate()} ${MONTHS[n.getMonth()]} ${n.getFullYear()}`;
     const a=monthPos(s,0),b=monthPos(s,N-1),yrs=N%12===0?(N===12?'سنة':N===24?'سنتان':`${N/12} سنوات`):`${N} شهرًا`;
     const W=794,H=1118,M=30,BR='#8A7565';
-    const note=(m,p)=>(notes[monthKey(s,m.i)+'|'+p.id]||'').trim();
+    const note=(m,p)=>src?String(p.note||'').trim():(notes[monthKey(s,m.i)+'|'+p.id]||'').trim();
     const mkCss=d=>`.pg{width:${W}px;height:${H}px;box-sizing:border-box;padding:${M}px;background:#fff;color:#2A1D15;font-family:'Readex Pro','Cairo',sans-serif;direction:rtl;position:relative;overflow:hidden}.pg *{box-sizing:border-box}.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #5B3A29;padding-bottom:8px}.hd h1{margin:0;font-size:21px;font-weight:700;color:#5B3A29}.hd p{margin:3px 0 0;font-size:11.5px;color:#6B5A4E}.hd .dt{text-align:left;font-size:11px;color:#6B5A4E;line-height:1.6}.sm{display:flex;gap:8px;margin:8px 0 8px}.sm div{flex:1;background:#F6F1E7;border:1px solid ${BR};border-radius:6px;padding:4px 8px;font-size:10.5px;color:#6B5A4E}.sm b{display:block;font-size:12.5px;color:#2A1D15;font-weight:600}table{width:100%;border-collapse:collapse;font-size:${d.fs}px;border:1.5px solid #3B2418}th{background:#5B3A29;color:#fff;font-weight:600;padding:${d.pad}px 6px;text-align:center;border:1px solid #3B2418}td{padding:${d.pad}px 6px;border:1px solid ${BR};vertical-align:middle;line-height:1.5}td.c{text-align:center}tr.gs td{border-top:2px solid #3B2418}.nt{color:#4A3a2e;font-size:${d.fs-1}px}.rc{display:inline-block;white-space:nowrap;margin-inline-end:10px}.rc+.rc{border-inline-start:1px solid ${BR};padding-inline-start:10px}.rc b{font-weight:600}.am{font-weight:700;color:#12683F}.ft{position:absolute;bottom:12px;left:${M}px;right:${M}px;display:flex;justify-content:space-between;font-size:10px;color:#8A7A6E;border-top:1px solid #D8CDBB;padding-top:5px}`;
     const head=`<tr><th style="width:42px">الدور</th><th style="width:48px">السنة</th><th style="width:70px">الشهر</th><th>المستلم والمبلغ</th><th style="width:190px">ملاحظات</th></tr>`;
     const gbody=gs=>{ // صفحة: عدة مجموعات ألوان (٦ أشهر لكل مجموعة)، والسنة خلية مدمجة تمتد عبر المجموعات
@@ -933,7 +1034,7 @@ async function makePdf(btn){
         const nt=nts.length?nts.map(x=>(m.payments.length>1?`<b>${esc(x.p.name.split(' ')[0])}:</b> `:'')+esc(x.t)).join('<br>'):'—';
         return`<tr${m.i%6===0?' class="gs"':''}><td class="c" style="background:${bg};font-weight:700">${m.i+1}</td>${ycell}<td style="background:${bg};font-weight:600">${MONTHS[m.m]}</td><td style="background:${bg}">${who}</td><td class="nt" style="background:${bg}">${nt}</td></tr>`}).join('')+`</tbody>`;
     };
-    const hdr=first=>`<div class="hd"><div><h1>${esc(s.name)}</h1><p>كشف تفصيلي لمسار الجمعية · ${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y}</p></div><div class="dt">تاريخ تنزيل الكشف<br><b>${dt}</b></div></div>`+(first?`<div class="sm"><div>المدة<b>${yrs}${N%12===0?` · ${N} شهرًا`:''}</b></div><div>الوعاء الشهري<b>${fmt(sched.pot)} ر.ع</b></div><div>عدد الأعضاء<b>${state.members.length}</b></div><div>الإجمالي<b>${fmt(sched.total)} ر.ع</b></div></div>`:'');
+    const hdr=first=>`<div class="hd"><div><h1>${esc(s.name)}</h1><p>كشف تفصيلي لمسار الجمعية · ${MONTHS[a.m]} ${a.y} – ${MONTHS[b.m]} ${b.y}</p></div><div class="dt">تاريخ تنزيل الكشف<br><b>${dt}</b></div></div>`+(first?`<div class="sm"><div>المدة<b>${yrs}${N%12===0?` · ${N} شهرًا`:''}</b></div><div>الوعاء الشهري<b>${fmt(sched.pot)} ر.ع</b></div><div>عدد الأعضاء<b>${memCount}</b></div><div>الإجمالي<b>${fmt(sched.total)} ر.ع</b></div></div>`:'');
     const groups=[];for(let i=0;i<N;i+=6)groups.push(sched.months.slice(i,i+6));
     const stage=document.createElement('div');stage.style.cssText='position:fixed;left:-10000px;top:0;z-index:-1';document.body.appendChild(stage);
     const build=(pgGroups,k,tot,d)=>{const pg=document.createElement('div');pg.className='pg';pg.innerHTML=`<style>${mkCss(d)}</style>`+hdr(k===0)+`<table><thead>${head}</thead>${gbody(pgGroups)}</table><div class="ft"><span>إعداد: هاني الغطريفي</span><span>صفحة ${k+1} من ${tot}</span></div>`;return pg};
@@ -951,7 +1052,7 @@ async function makePdf(btn){
     const root=document.createElement('div');root.id='printroot';
     plan.chunks.forEach((c,k)=>root.appendChild(build(c,k,plan.chunks.length,plan.d)));
     document.body.appendChild(root);
-    const fname=`كشف ${s.name.replace(/[\\/:*?"<>|]/g,'')} ${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+    const fname=src&&src.fname?src.fname:`كشف ${s.name.replace(/[\\/:*?"<>|]/g,'')} ${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
     let ok=false;
     try{
       toast('جارٍ تجهيز ملف PDF…');
@@ -1051,8 +1152,8 @@ function renderSettings(){
    <div class="fld"><span>سنة البداية</span><input class="in" type="number" inputmode="numeric" data-s="startYear" value="${s.startYear}"></div>
    <div class="fld"><span>المدة (بالسنوات)</span><input class="in" type="number" inputmode="decimal" step="0.5" min="0.5" max="10" data-s="years" value="${s.years}"></div>
    <div class="fld"><span>قيمة السهم الافتراضية</span><input class="in" type="number" inputmode="numeric" min="0" step="1" data-s="share" value="${s.share}"></div></div>
-   <p class="hint" id="setInfo"></p>`;
-  updateSetInfo();
+   <p class="hint" id="setInfo"></p><div id="arcBox"></div>`;
+  updateSetInfo();renderArchive();if(arcList===null)loadArchives();
 }
 function updateSetInfo(){
   const s=state.settings,N=monthsCount(s),b=monthPos(s,N-1);
@@ -1123,6 +1224,7 @@ function renderMembers(){
    ${draftPicker?picker(d.months,'draft'):''}${tagsHTML(d,'draft')}
    <div class="err">${esc(draftErr)}</div>
    <button class="btn pri" data-act="add">${ic('plus')}إضافة العضو</button></div>`:''}
+  ${importHTML()}
   <button class="coll" data-act="tg-ml" aria-expanded="${openML}" style="margin-top:8px">${ic('users')}قائمة الأعضاء<small>${state.members.length} عضوًا</small><span class="sp"></span>${ic('down','cv')}</button>
   ${openML?(state.members.length?`<div>${state.members.map(memberRow).join('')}</div>`:'<p class="hint">لا يوجد أعضاء بعد.</p>'):''}
   <p class="hint">الترتيب بالأسهم يحدد أسبقية الأعضاء داخل نفس مجموعة موعد الاستلام. الأشهر المفضلة تُعيد ترتيب العضو داخل مجموعته فقط لتقترب دفعاته من الأشهر المختارة، دون أي تعارض.</p>`;
@@ -1439,7 +1541,7 @@ function click(e){
     case'go-login':loginErr='';view='login';render();break;
     case'go-home':view='home';render();break;
     case'go-admin':view='admin';render();break;
-    case'logout':user=null;userMember=null;noteShare={};creds=null;phones={};devices={};remoteUsers=[];if(!devMember)state=defaultData();notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
+    case'logout':user=null;userMember=null;noteShare={};arcList=null;arcStep=0;creds=null;phones={};devices={};remoteUsers=[];if(!devMember)state=defaultData();notes={};noteEdit=false;delConf='';noteSel=null;perms=[];editU=null;try{localStorage.removeItem('jamiya-auth')}catch(e){}view='home';render();break;
     case'login':doLogin();break;
     case'prev':go(-1);break;
     case'next':go(1);break;
@@ -1506,6 +1608,16 @@ function click(e){
     case'onb-next':onbStep=2;onbIos=false;{const o=$('.onb');if(o)o.outerHTML=onbHTML()}break;
     case'tg-ml':openML=!openML;renderMembers();break;
     case'tg-add':openAdd=!openAdd;renderMembers();break;
+    case'tg-imp':openImp=!openImp;impMsg='';if(openImp&&arcList===null)loadArchives();renderMembers();break;
+    case'imp-mode':impMode=b.dataset.v;renderMembers();break;
+    case'imp-ph':impPh=!impPh;renderMembers();break;
+    case'imp-go':importArchive();break;
+    case'arc-start':arcStep=1;arcMsg='';renderArchive();break;
+    case'arc-keep':arcKeep=b.dataset.v;renderArchive();break;
+    case'arc-next':if(arcStep<3){arcStep++;renderArchive()}else doArchive();break;
+    case'arc-cancel':arcStep=0;renderArchive();break;
+    case'arc-pdf':arcPdf(b.dataset.id,b);break;
+    case'arc-del':if(arcDelConf!==b.dataset.id){arcDelConf=b.dataset.id;renderArchive()}else{const id=arcDelConf;arcDelConf='';rpc('jamiya_archive_delete',{p_u:creds.u,p_p:creds.p,p_id:id}).then(()=>{toast('تم حذف الأرشيف');loadArchives()}).catch(()=>toast('تعذّر الحذف'))}break;
     case'chippay':{
       const i=clampIdx(cursor),k=monthKey(state.settings,i);
       if(isPaid(k,id)){if(chipConf===id){chipConf='';setPaid(id,false,i)}else{chipConf=id;refreshPay()}}

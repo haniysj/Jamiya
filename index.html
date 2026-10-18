@@ -60,6 +60,7 @@ button{font-family:inherit;cursor:pointer}
 .schst{font-size:13px;line-height:1.7;padding:8px 12px;border-radius:12px;margin:2px 0 10px;background:var(--ok-soft);color:var(--ok)}.schst.warn{background:var(--rust-soft);color:var(--rust)}
 .nmk{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none;vertical-align:middle}.nmk::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px rgba(201,150,40,.28)}.dck{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--ok);color:#fff;flex:none}.dck svg{width:10px;height:10px;stroke-width:3.2}.nmk.add::before{background:transparent;border:1.5px dashed var(--muted);box-shadow:none;width:8px;height:8px;box-sizing:border-box}.nmk:focus-visible{outline:2px solid var(--primary);border-radius:50%}
 .npop .xb{position:absolute;top:10px;inset-inline-end:10px;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}.npop .onbc{position:relative;padding-top:44px}
+.cres{background:var(--gold-soft);border:1.5px solid var(--gold);border-radius:14px;padding:10px 14px;text-align:center}.cres small{display:block;color:var(--gold-ink);font-weight:700;font-size:12px}.cres b{display:block;font-size:26px;color:var(--amt);margin-top:2px}.cres .omr svg{height:16px}.npop .fld .in{text-align:center}
 .npop{position:fixed;inset:0;z-index:95;background:rgba(30,20,14,.5);display:flex;align-items:center;justify-content:center;padding:16px}.npop .onbc{max-width:380px;gap:10px}.npop h3{margin:0;font-size:15px}.npop .nt{white-space:pre-wrap;line-height:1.8;background:var(--gold-soft);color:var(--gold-ink);border-radius:12px;padding:10px 12px;font-size:14px}.npop textarea{min-height:96px}
 .dlv{display:flex;flex-direction:column;gap:6px;align-items:stretch}.dlvb{justify-content:center;white-space:normal;text-align:center;line-height:1.5}.btn.okb{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
 .tc{position:relative}.tc.dl::after{content:'';position:absolute;inset:0;border:2.5px solid var(--ok);border-radius:14px;pointer-events:none}.dlb{position:absolute;top:6px;left:8px;width:20px;height:20px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center}.dlb svg{width:12px;height:12px}
@@ -360,7 +361,7 @@ body.enter .tc:nth-child(1){animation-delay:.3s}body.enter .tc:nth-child(2){anim
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
 <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></symbol>
 <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
-<symbol id="i-unlink" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M11 18.3h2"/><path d="M3.5 3.5l17 17" stroke-width="2.2"/></symbol><symbol id="i-aup" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol><symbol id="i-adn" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol><symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.3 2.7 6 6 6l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/></symbol><symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></symbol><symbol id="i-plussq" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></symbol><symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol><symbol id="i-contact" viewBox="0 0 24 24"><rect x="4" y="3" width="15" height="18" rx="2"/><circle cx="11.5" cy="10" r="2.6"/><path d="M7.5 17a4 4 0 0 1 8 0"/><path d="M21 8v2M21 13v2"/></symbol><symbol id="i-note" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v10l-5 5H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M15 20v-4a1 1 0 0 1 1-1h4M8 9h8M8 12.5h5"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-calc" viewBox="0 0 24 24"><rect x="4.5" y="2.5" width="15" height="19" rx="2.6"/><rect x="7.6" y="5.6" width="8.8" height="3.6" rx=".8"/><path d="M8.2 13h.01M12 13h.01M15.8 13h.01M8.2 16.8h.01M12 16.8h.01M15.8 16.8h.01" stroke-width="2.4"/></symbol><symbol id="i-unlink" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.4"/><path d="M11 18.3h2"/><path d="M3.5 3.5l17 17" stroke-width="2.2"/></symbol><symbol id="i-aup" viewBox="0 0 24 24"><path d="M12 20V4M5 11l7-7 7 7"/></symbol><symbol id="i-adn" viewBox="0 0 24 24"><path d="M12 4v16M5 13l7 7 7-7"/></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol><symbol id="i-wa" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.7-5.4A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.3 2.7 6 6 6l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/></symbol><symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M6 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></symbol><symbol id="i-plussq" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></symbol><symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 20h16"/></symbol><symbol id="i-contact" viewBox="0 0 24 24"><rect x="4" y="3" width="15" height="18" rx="2"/><circle cx="11.5" cy="10" r="2.6"/><path d="M7.5 17a4 4 0 0 1 8 0"/><path d="M21 8v2M21 13v2"/></symbol><symbol id="i-note" viewBox="0 0 24 24"><path d="M5 4h14a1 1 0 0 1 1 1v10l-5 5H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M15 20v-4a1 1 0 0 1 1-1h4M8 9h8M8 12.5h5"/></symbol><symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
 <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
 <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -654,7 +655,7 @@ window.addEventListener('pagehide',()=>{if(saveStatus==='dirty')Storage.save(sta
 /* ---------- الواجهة العامة ---------- */
 function headerHTML(){
   const s=state.settings,N=monthsCount(s),a=monthPos(s,0),b=monthPos(s,N-1);
-  const th=`<button class="theme" data-act="theme" aria-label="${theme==='dark'?'الوضع النهاري':'الوضع الليلي'}" title="${theme==='dark'?'الوضع النهاري':'الوضع الليلي'}">${ic(theme==='dark'?'sun':'moon')}</button>`;
+  const th=`<button class="theme" data-act="theme" aria-label="${theme==='dark'?'الوضع النهاري':'الوضع الليلي'}" title="${theme==='dark'?'الوضع النهاري':'الوضع الليلي'}">${ic(theme==='dark'?'sun':'moon')}</button><button class="theme" data-act="calc" aria-label="الحاسبة" title="الحاسبة: القسط والمبلغ المستحق">${ic('calc')}</button>`;
   let row='',bell='';
   if(view==='home'){
     row=user?`<button class="theme pri wl" data-act="go-admin" aria-label="لوحة التحكم" title="لوحة التحكم">${ic('gear')}<span class="tl">لوحة التحكم</span></button><button class="theme dg wl" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}<span class="tl">تسجيل الخروج</span></button>`
@@ -1007,6 +1008,40 @@ function importHTML(){
    <p class="hint">يُضاف الأعضاء إلى الحاليين، ويُتخطّى من يوجد بنفس الاسم. الأدوار تُبنى من جديد.</p>
    <button class="btn pri" data-act="imp-go" style="margin-top:4px">${ic('plus')}استيراد</button></div>`)):'';
   return`<button class="coll" data-act="tg-imp" aria-expanded="${openImp}" style="margin-top:8px">${ic('db')}استيراد أعضاء من أرشيف سابق<span class="sp"></span>${ic('down','cv')}</button>${body}${impMsg?`<div class="hint" style="margin-top:6px"><b>${esc(impMsg)}</b></div>`:''}`;
+}
+
+
+/* ---------- الحاسبة العامة ---------- */
+function calcHTML(){
+  return`<div class="npop" data-act="calc-bg" role="dialog" aria-modal="true" aria-label="الحاسبة"><div class="onbc">
+   <button type="button" class="xb" data-act="calc-close" aria-label="إغلاق">×</button>
+   <h3 style="display:flex;align-items:center;gap:8px">${ic('calc')}حاسبة الجمعية</h3>
+   <p class="hint" style="margin:0">احسب القسط الذي تريد الاشتراك به والمبلغ الذي تستلمه عند دورك. لا علاقة لها بالجمعية الحالية.</p>
+   <label class="fld"><span>القسط الشهري (ر.ع)</span><input class="in" id="cc-i" type="number" inputmode="decimal" min="0" step="any" placeholder="مثال: 100"></label>
+   <label class="fld"><span>مدة الجمعية (بالأشهر)</span><input class="in" id="cc-m" type="number" inputmode="numeric" min="1" step="1" value="60"></label>
+   <div class="cres"><small>إجمالي المبلغ المستحق</small><b id="cc-t">—</b><small id="cc-y"></small></div>
+   <label class="fld"><span>أو اكتب المبلغ الذي تريد استلامه لمعرفة القسط (ر.ع)</span><input class="in" id="cc-r" type="number" inputmode="decimal" min="0" step="any" placeholder="مثال: 6000"></label>
+  </div></div>`;
+}
+function calcUpdate(from){
+  const i=$('#cc-i'),m=$('#cc-m'),r=$('#cc-r'),t=$('#cc-t'),y=$('#cc-y');if(!i||!m||!t)return;
+  const mo=Math.max(0,Math.round(Number(m.value)||0)),num=v=>{const n=Number(v);return isFinite(n)&&n>0?n:0};
+  const f=n=>Number.isInteger(Math.round(n*1000)/1000)?fmt(n):(Math.round(n*1000)/1000).toLocaleString('en-US',{maximumFractionDigits:3});
+  if(from==='r'){const rr=num(r.value);i.value=rr&&mo?String(Math.round(rr/mo*1000)/1000):''}
+  const ii=num(i.value),tot=ii*mo;
+  t.textContent=tot?f(tot)+' ر.ع':'—';
+  y.textContent=mo?(mo%12===0?`${mo/12} ${mo/12===1?'سنة':mo/12===2?'سنتان':'سنوات'} · ${mo} شهرًا`:`${mo} شهرًا`):'';
+  if(from!=='r')r.value=tot?String(Math.round(tot*1000)/1000):'';
+}
+function showCalc(open){
+  let b=$('#calcbox');
+  if(!open){if(b)b.remove();return}
+  if(b)return;
+  b=document.createElement('div');b.id='calcbox';
+  b.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;if(a.dataset.act==='calc-close'||(a.dataset.act==='calc-bg'&&e.target===a))showCalc(false)});
+  let last='i';b.addEventListener('input',e=>{const id=e.target.id;if(id==='cc-r'){last='r';calcUpdate('r')}else if(id==='cc-i'){last='i';calcUpdate('i')}else if(id==='cc-m')calcUpdate(last)});
+  b.innerHTML=calcHTML();document.body.appendChild(b);
+  const i=$('#cc-i');if(i)try{i.focus()}catch(x){}
 }
 
 /* ---------- كشف PDF ---------- */
@@ -1607,6 +1642,7 @@ function click(e){
     case'onb-skip':onbClose();break;
     case'onb-next':onbStep=2;onbIos=false;{const o=$('.onb');if(o)o.outerHTML=onbHTML()}break;
     case'tg-ml':openML=!openML;renderMembers();break;
+    case'calc':showCalc(true);break;
     case'tg-add':openAdd=!openAdd;renderMembers();break;
     case'tg-imp':openImp=!openImp;impMsg='';if(openImp&&arcList===null)loadArchives();renderMembers();break;
     case'imp-mode':impMode=b.dataset.v;renderMembers();break;

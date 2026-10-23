@@ -42,14 +42,14 @@ button{font-family:inherit;cursor:pointer}
 .btn:disabled,.ib:disabled{opacity:.4;cursor:default}
 .ib{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;width:32px;height:32px;display:inline-grid;place-items:center;padding:0}
 .top{display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--line)}
-.brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1 1 190px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0;flex:1 1 170px}
 .nav{flex:none;flex-wrap:nowrap;margin-inline-start:auto}
 .mark{width:46px;height:46px;border-radius:13px;background:var(--primary);display:grid;place-items:center;flex:none}
 .mark svg{width:30px;height:16px;fill:var(--gold)}
 .brand h1{margin:0;font-size:21px;font-weight:800;line-height:1.2;color:var(--primary-ink)}
 .brand p{margin:0;color:var(--muted);font-size:12.5px}.wlc{margin-top:5px;font-size:13px;font-weight:700;color:var(--gold-ink);background:var(--gold-soft);border-radius:999px;padding:1px 10px;width:max-content;max-width:100%}.wlc b{font-weight:800}
 .nav{display:flex;flex-direction:column;gap:6px;align-items:stretch}
-.navrow{display:flex;gap:8px;justify-content:flex-end}
+.navrow{display:flex;gap:4px;justify-content:flex-end}
 .theme .tl{display:none}
 @media (pointer:fine) and (min-width:760px){.theme.wl{width:auto;padding:0 12px;display:inline-flex;align-items:center;gap:7px}.theme.wl .tl{display:inline;font-size:13px;font-weight:700;white-space:nowrap}}
 .theme.dg{border-color:var(--rust);color:var(--rust)}
@@ -71,7 +71,7 @@ button{font-family:inherit;cursor:pointer}
 .stat span{color:var(--muted)}.stat b{font-weight:800}
 .stat{flex:1 1 0;min-width:0;white-space:nowrap}
 @media(max-width:560px){.stat{flex-direction:column;align-items:flex-start;gap:1px;padding:5px 9px;font-size:12px}.stat span{font-size:11px}}
-.bellbtn{height:auto;min-height:32px;justify-content:space-between;padding:3px 10px}.bellbtn .bt{display:flex;align-items:center;gap:6px}.bellbtn .bk{display:flex;flex-direction:column;align-items:center;line-height:1.1;max-width:70px}.bellbtn .bk svg{width:15px;height:15px;color:#2E9E5B;stroke-width:3}.bellbtn .bk small{font-size:9.5px;font-weight:600;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bellbtn{height:auto;min-height:32px;justify-content:space-between;gap:8px;padding:3px 8px}.bellbtn .bt{display:flex;align-items:center;gap:6px}.bellbtn .bk{display:flex;flex-direction:row;align-items:center;gap:3px;line-height:1.1;max-width:84px}.bellbtn .bk svg{width:14px;height:14px;color:#2E9E5B;stroke-width:3;flex:none}.bellbtn .bk small{font-size:10.5px;font-weight:700;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:400px){.stats .stat:not(.inl){padding:5px 6px}.stats .stat:not(.inl) span{font-size:10px}}
 
 .brand p{margin-top:5px!important}
@@ -129,7 +129,7 @@ body{min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-tap-highlight-
 .ud:hover{fill:rgba(200,155,60,.28)}
 @keyframes ring{0%{transform:scale(1);opacity:.6}100%{transform:scale(2.8);opacity:0}}
 .pulse{animation:ring 1.9s ease-out infinite;fill:var(--gold);transform-box:fill-box;transform-origin:center}
-.theme{width:38px;height:38px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;padding:0}
+.theme{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;padding:0}
 .theme .ic{width:1.3em;height:1.3em}
 .theme.pri{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
 .tabs{display:flex;gap:4px;padding:4px;background:var(--surface2);border-radius:12px;margin:10px 0 12px;overflow-x:auto}
@@ -293,7 +293,7 @@ textarea{min-height:110px;font-family:ui-monospace,monospace;font-size:12px;dire
   .mrow{grid-template-columns:62px 1fr;padding:4px 8px;gap:6px}
   .ml{flex-direction:column;align-items:flex-start;gap:0;line-height:1.25}.ml b{font-size:12.5px}.ml small{font-size:11px}
   .chip{font-size:11.5px;padding:0 6px;gap:5px}.chips{gap:4px}
-  .brand h1{font-size:17px}.brand p{font-size:11.5px}.mark{width:40px;height:40px}.mark svg{width:26px}
+  .brand h1{font-size:16px}.brand p{font-size:11px}.brand{gap:8px}.mark{width:34px;height:34px}.mark svg{width:26px}
   .nav .btn{padding:8px 10px}.nav .btn .bl{display:none}
   .amt{width:calc(50% - 6px)}.pf{width:100%}
   .tot{flex:1}
@@ -335,7 +335,7 @@ body.enter .tc:nth-child(1){animation-delay:.3s}body.enter .tc:nth-child(2){anim
 .btn:active,.theme:active,.arrow:active,.ib:active{transform:scale(.94)}
 .pdfb{margin-right:auto;padding:5px 8px!important;border-color:#D32F2F!important}.pdfb svg{width:22px;height:22px;display:block}.pdfb[disabled]{opacity:.5}
 #printroot{display:none}
-.bellrow{display:flex;gap:6px;align-items:stretch}@media(min-width:700px){.bellrow{width:max-content;max-width:100%}.bellrow .bellbtn{flex:none;padding:3px 14px}}.bellrow .bellbtn{flex:1;width:auto;min-width:0}.theme.ulk{width:36px;height:auto;min-height:32px;border-radius:10px;flex:none}.theme.ulk svg{width:18px;height:18px}.theme.ulk.on{background:var(--rust);border-color:var(--rust);color:#fff;animation:pl 1s infinite}
+.bellrow{display:flex;gap:4px;align-items:stretch;width:max-content;max-width:100%;align-self:flex-end}.bellrow .bellbtn{flex:none;width:auto;min-width:0;padding:3px 8px}.theme.ulk{width:32px;height:auto;min-height:32px;border-radius:10px;flex:none}.theme.ulk svg{width:18px;height:18px}.theme.ulk.on{background:var(--rust);border-color:var(--rust);color:#fff;animation:pl 1s infinite}
 .gate{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;gap:12px}
 .gate .onbc{max-width:380px}.gate .mark{margin:0 auto;width:54px;height:54px}.gate .mark svg{width:34px;height:18px}.gate h2{margin:0;text-align:center;font-size:19px;color:var(--primary-ink)}.gate p{margin:0;text-align:center;color:var(--muted);font-size:13px}
 .gate .alink{background:none;border:0;color:var(--muted);font-size:12.5px;text-decoration:underline;cursor:pointer;padding:6px;font-family:inherit}
@@ -660,7 +660,7 @@ function headerHTML(){
   if(view==='home'){
     row=user?`<button class="theme pri wl" data-act="go-admin" aria-label="لوحة التحكم" title="لوحة التحكم">${ic('gear')}<span class="tl">لوحة التحكم</span></button><button class="theme dg wl" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}<span class="tl">تسجيل الخروج</span></button>`
       :`<button class="theme pri wl" data-act="go-login" aria-label="دخول الإدارة" title="دخول الإدارة">${ic('lock')}<span class="tl">دخول الإدارة</span></button>`;
-    if(REMOTE)bell=`<div class="bellrow">${devMember?`<button class="theme ulk${unlinkConf?' dg on':''}" data-act="unlink" aria-label="إلغاء ارتباط هذا الجهاز برقم الهاتف" title="${unlinkConf?'اضغط مرة أخرى للتأكيد':'إلغاء ارتباط هذا الجهاز برقم الهاتف'}">${ic('unlink')}</button>`:''}<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk">${ic('check')}<small>${esc(((find(pushMine.m)||{}).name||'').trim().split(/\s+/)[0])}</small></span>`:''}</button></div>`;
+    if(REMOTE)bell=`<div class="bellrow">${devMember?`<button class="theme ulk${unlinkConf?' dg on':''}" data-act="unlink" aria-label="إلغاء ارتباط هذا الجهاز برقم الهاتف" title="${unlinkConf?'اضغط مرة أخرى للتأكيد':'إلغاء ارتباط هذا الجهاز برقم الهاتف'}">${ic('unlink')}</button>`:''}<button class="bellbtn${pushOn()&&pushMine?' on':''}" data-act="pushtog" aria-label="التنبيهات" title="تنبيهات موعد الدفع"><span class="bt">${ic('bell')}<span>التنبيهات</span></span>${pushOn()&&pushMine?`<span class="bk"><small>${esc(((find(pushMine.m)||{}).name||'').trim().split(/\s+/)[0])}</small>${ic('check')}</span>`:''}</button></div>`;
   }else if(view==='admin')row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button><button class="theme dg wl" data-act="logout" aria-label="تسجيل الخروج" title="تسجيل الخروج">${ic('out')}<span class="tl">تسجيل الخروج</span></button>`;
   else row=`<button class="theme wl" data-act="go-home" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية">${ic('home')}<span class="tl">الصفحة الرئيسية</span></button>`;
   try{localStorage.setItem('jamiya-name',s.name)}catch(e){}
